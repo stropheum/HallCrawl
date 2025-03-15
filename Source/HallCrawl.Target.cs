@@ -7,6 +7,8 @@ public class HallCrawlTarget : TargetRules
 {
 	public HallCrawlTarget(TargetInfo Target) : base(Target)
 	{
+		bUseUnityBuild = false;
+		bUsePCHFiles = true;
 		Type = TargetType.Game;
 		DefaultBuildSettings = BuildSettingsVersion.V5;
 		IncludeOrderVersion = EngineIncludeOrderVersion.Unreal5_5;

@@ -7,6 +7,8 @@ public class HallCrawlEditorTarget : TargetRules
 {
 	public HallCrawlEditorTarget(TargetInfo Target) : base(Target)
 	{
+		bUseUnityBuild = false;
+		bUsePCHFiles = true;
 		Type = TargetType.Editor;
 		DefaultBuildSettings = BuildSettingsVersion.V5;
 		IncludeOrderVersion = EngineIncludeOrderVersion.Unreal5_5;

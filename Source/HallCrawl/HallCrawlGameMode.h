@@ -2,7 +2,7 @@
 
 #pragma once
 
-#include "CoreMinimal.h"
+#include "HallCrawlPCH.h"
 #include "GameFramework/GameModeBase.h"
 #include "HallCrawlGameMode.generated.h"
 

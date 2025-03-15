@@ -2,7 +2,7 @@
 
 #pragma once
 
-#include "CoreMinimal.h"
+#include "HallCrawlPCH.h"
 #include "Components/SkeletalMeshComponent.h"
 #include "HallCrawlWeaponComponent.generated.h"
 
@@ -15,31 +15,32 @@ class HALLCRAWL_API UHallCrawlWeaponComponent : public USkeletalMeshComponent
 
 public:
 	/** Projectile class to spawn */
-	UPROPERTY(EditDefaultsOnly, Category=Projectile)
-	TSubclassOf<class AHallCrawlProjectile> ProjectileClass;
-
-	/** Sound to play each time we fire */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category=Gameplay)
-	USoundBase* FireSound;
+	UPROPERTY(EditDefaultsOnly, Category = "Abilities")
+	TSubclassOf<class UFireRifleAbility> FireRifleAbilityClass;
 	
-	/** AnimMontage to play each time we fire */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Gameplay)
-	UAnimMontage* FireAnimation;
-
-	/** Gun muzzle's offset from the characters location */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category=Gameplay)
-	FVector MuzzleOffset;
-
+	// /** Projectile class to spawn */
+	// UPROPERTY(EditDefaultsOnly, Category=Projectile)
+	// TSubclassOf<class AHallCrawlProjectile> ProjectileClass;
+	//
+	// /** Sound to play each time we fire */
+	// UPROPERTY(EditAnywhere, BlueprintReadWrite, Category=Gameplay)
+	// USoundBase* FireSound;
+	//
+	// /** AnimMontage to play each time we fire */
+	// UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Gameplay)
+	// UAnimMontage* FireAnimation;
+	//
+	// /** Gun muzzle's offset from the characters location */
+	// UPROPERTY(EditAnywhere, BlueprintReadWrite, Category=Gameplay)
+	// FVector MuzzleOffset;
+	//
 	/** MappingContext */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Input, meta=(AllowPrivateAccess = "true"))
 	class UInputMappingContext* FireMappingContext;
-
+	
 	/** Fire Input Action */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Input, meta=(AllowPrivateAccess = "true"))
 	class UInputAction* FireAction;
-
-	/** Sets default values for this component's properties */
-	UHallCrawlWeaponComponent();
 
 	/** Attaches the actor to a FirstPersonCharacter */
 	UFUNCTION(BlueprintCallable, Category="Weapon")
@@ -53,8 +54,11 @@ protected:
 	/** Ends gameplay for this component. */
 	UFUNCTION()
 	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
+	
+	FGameplayAbilitySpecHandle FireAbilityHandle;
 
 private:
 	/** The Character holding this weapon*/
-	AHallCrawlCharacter* Character;
+	UPROPERTY()
+	AHallCrawlCharacter* Character = nullptr;
 };

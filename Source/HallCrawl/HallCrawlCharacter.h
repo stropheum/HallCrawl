@@ -2,9 +2,9 @@
 
 #pragma once
 
-#include "CoreMinimal.h"
-#include "GameFramework/Character.h"
+#include "HallCrawlPCH.h"
 #include "Logging/LogMacros.h"
+#include "AbilitySystemInterface.h"
 #include "HallCrawlCharacter.generated.h"
 
 class UInputComponent;
@@ -17,7 +17,7 @@ struct FInputActionValue;
 DECLARE_LOG_CATEGORY_EXTERN(LogTemplateCharacter, Log, All);
 
 UCLASS(config=Game)
-class AHallCrawlCharacter : public ACharacter
+class AHallCrawlCharacter : public ACharacter, public IAbilitySystemInterface
 {
 	GENERATED_BODY()
 
@@ -48,12 +48,17 @@ class AHallCrawlCharacter : public ACharacter
 public:
 	AHallCrawlCharacter();
 
+	virtual UAbilitySystemComponent* GetAbilitySystemComponent() const override;
+
 protected:
 	/** Called for movement input */
 	void Move(const FInputActionValue& Value);
 
 	/** Called for looking input */
 	void Look(const FInputActionValue& Value);
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Abilities")
+	UAbilitySystemComponent* AbilitySystemComponent;
 
 protected:
 	// APawn interface

@@ -37,6 +37,11 @@ AHallCrawlCharacter::AHallCrawlCharacter()
 
 }
 
+UAbilitySystemComponent* AHallCrawlCharacter::GetAbilitySystemComponent() const
+{
+	return AbilitySystemComponent;
+}
+
 //////////////////////////////////////////////////////////////////////////// Input
 
 void AHallCrawlCharacter::NotifyControllerChanged()

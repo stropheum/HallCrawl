@@ -2,8 +2,7 @@
 
 #pragma once
 
-#include "CoreMinimal.h"
-#include "GameFramework/Actor.h"
+#include "HallCrawlPCH.h"
 #include "HallCrawlProjectile.generated.h"
 
 class USphereComponent;

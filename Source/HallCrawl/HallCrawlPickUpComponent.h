@@ -2,9 +2,8 @@
 
 #pragma once
 
-#include "CoreMinimal.h"
+#include "HallCrawlPCH.h"
 #include "Components/SphereComponent.h"
-#include "HallCrawlCharacter.h"
 #include "HallCrawlPickUpComponent.generated.h"
 
 // Declaration of the delegate that will be called when someone picks this up

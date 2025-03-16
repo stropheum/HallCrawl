@@ -34,6 +34,7 @@ void UFireRifleAbility::ActivateAbility(
 	if (ProjectileClass == nullptr)
 	{
 		ProjectileClass = AHallCrawlProjectile::StaticClass();
+		UE_LOG(LogGameplayTags, Warning, TEXT("ProjectileClass == nulllptr. Falling back to base class"));
 	}
 	check(ProjectileClass);
 	

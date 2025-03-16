@@ -21,6 +21,9 @@ class AHallCrawlProjectile : public AActor
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Movement, meta = (AllowPrivateAccess = "true"))
 	UProjectileMovementComponent* ProjectileMovement;
 
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = Projectile, meta = (allowPrivateAccess = "true"))
+	USkeletalMeshComponent* SkeletalMesh;
+
 public:
 	AHallCrawlProjectile();
 

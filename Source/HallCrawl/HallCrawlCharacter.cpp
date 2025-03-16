@@ -17,7 +17,7 @@ DEFINE_LOG_CATEGORY(LogTemplateCharacter);
 //////////////////////////////////////////////////////////////////////////
 // AHallCrawlCharacter
 
-AHallCrawlCharacter::AHallCrawlCharacter()
+AHallCrawlCharacter::AHallCrawlCharacter() : MuzzleOffset(FVector(100.0f, 0.0f, 10.0f))
 {
 	// Set size for collision capsule
 	GetCapsuleComponent()->InitCapsuleSize(55.f, 96.0f);
@@ -37,12 +37,16 @@ AHallCrawlCharacter::AHallCrawlCharacter()
 	Mesh1P->SetRelativeLocation(FVector(-30.f, 0.f, -150.f));
 
 	AbilitySystemComponent = CreateDefaultSubobject<UAbilitySystemComponent>(TEXT("AbilitySystemComponent"));
-
 }
 
 UAbilitySystemComponent* AHallCrawlCharacter::GetAbilitySystemComponent() const
 {
 	return AbilitySystemComponent;
+}
+
+FVector AHallCrawlCharacter::GetMuzzleOffset() const
+{
+	return MuzzleOffset;
 }
 
 //////////////////////////////////////////////////////////////////////////// Input

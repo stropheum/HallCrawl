@@ -11,10 +11,6 @@ using FActorInfo = FGameplayAbilityActorInfo;
 using FActivationInfo = FGameplayAbilityActivationInfo;
 using FEventData = FGameplayEventData;
 
-UFireRifleAbility::UFireRifleAbility()
-{
-	MuzzleOffset = FVector(100.0f, 0.0f, 10.0f);
-}
 
 void UFireRifleAbility::ActivateAbility(
 	const FSpecHandle Handle, const FActorInfo* ActorInfo, const FActivationInfo ActivationInfo, const FEventData* TriggerEventData)
@@ -23,14 +19,38 @@ void UFireRifleAbility::ActivateAbility(
 	
 	AActor* Actor = GetAvatarActorFromActorInfo();
 	check(Actor);
-	const auto Character = Cast<AHallCrawlCharacter>(Actor);
+	Character = Cast<AHallCrawlCharacter>(Actor);
 	check(Character);
 	
 	if (Character == nullptr || Character->GetController() == nullptr)
 	{
 		return;
 	}
+	
+	switch (FireMode)
+	{
+	case EFireMode::Single:
+		HandleSingleFire();
+		break;
+	case EFireMode::Auto:
+		HandleAutoFire();
+		break;
+	case EFireMode::Burst:
+		HandleBurstFire();
+		break;
+	}
+}
 
+void UFireRifleAbility::EndAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo,
+	const FGameplayAbilityActivationInfo ActivationInfo, bool bReplicateEndAbility, bool bWasCancelled)
+{
+	Super::EndAbility(Handle, ActorInfo, ActivationInfo, bReplicateEndAbility, bWasCancelled);
+}
+
+void UFireRifleAbility::FireProjectile()
+{
+	if (!IsActive()) { return; }
+	
 	if (ProjectileClass == nullptr)
 	{
 		ProjectileClass = AHallCrawlProjectile::StaticClass();
@@ -38,42 +58,48 @@ void UFireRifleAbility::ActivateAbility(
 	}
 	check(ProjectileClass);
 	
-	// Try and fire a projectile
-	if (ProjectileClass != nullptr)
-	{
-		UWorld* const World = GetWorld();
-		if (World != nullptr)
-		{
-			APlayerController* PlayerController = Cast<APlayerController>(Character->GetController());
-			const FRotator SpawnRotation = PlayerController->PlayerCameraManager->GetCameraRotation();
-			// MuzzleOffset is in camera space, so transform it to world space before offsetting from the character location to find the final muzzle position
-			const FVector SpawnLocation = Character->GetActorLocation() + SpawnRotation.RotateVector(MuzzleOffset);
+	UWorld* const World = GetWorld();
+	if (!World) { return; }
+		
+	const APlayerController* PlayerController = Cast<APlayerController>(Character->GetController());
+	const FRotator SpawnRotation = PlayerController->PlayerCameraManager->GetCameraRotation();
+	const FVector MuzzleOffset = Character->GetMuzzleOffset();
+	const FVector SpawnLocation = Character->GetActorLocation() + SpawnRotation.RotateVector(MuzzleOffset);
 	
-			//Set Spawn Collision Handling Override
-			FActorSpawnParameters ActorSpawnParams;
-			ActorSpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButDontSpawnIfColliding;
+	FActorSpawnParameters ActorSpawnParams;
+	ActorSpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButDontSpawnIfColliding;
+	World->SpawnActor<AHallCrawlProjectile>(ProjectileClass, SpawnLocation, SpawnRotation, ActorSpawnParams);
 	
-			// Spawn the projectile at the muzzle
-			World->SpawnActor<AHallCrawlProjectile>(ProjectileClass, SpawnLocation, SpawnRotation, ActorSpawnParams);
-		}
-	}
-	
-	// Try and play the sound if specified
 	if (FireSound != nullptr)
 	{
 		UGameplayStatics::PlaySoundAtLocation(this, FireSound, Character->GetActorLocation());
 	}
 	
-	// Try and play a firing animation if specified
 	if (FireAnimation != nullptr)
 	{
-		// Get the animation object for the arms mesh
 		UAnimInstance* AnimInstance = Character->GetMesh1P()->GetAnimInstance();
 		if (AnimInstance != nullptr)
 		{
 			AnimInstance->Montage_Play(FireAnimation, 1.f);
 		}
 	}
-	
-	EndAbility(Handle, ActorInfo, ActivationInfo, true, false);
+}
+
+void UFireRifleAbility::HandleSingleFire()
+{
+	FireProjectile();
+}
+
+void UFireRifleAbility::HandleAutoFire()
+{
+	FireTask = UAbilityTask_WaitDelay::WaitDelay(this, FireRate);
+	FireTask->OnFinish.AddDynamic(this, &UFireRifleAbility::FireProjectile);
+	FireProjectile();
+	FireTask->ReadyForActivation();
+	FireTask->SetWaitingOnAvatar();
+}
+
+void UFireRifleAbility::HandleBurstFire()
+{
+	// TODO: implement burst fire
 }

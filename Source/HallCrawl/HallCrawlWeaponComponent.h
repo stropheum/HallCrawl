@@ -6,6 +6,7 @@
 #include "Components/SkeletalMeshComponent.h"
 #include "HallCrawlWeaponComponent.generated.h"
 
+class UGameplayAbility;
 class AHallCrawlCharacter;
 
 UCLASS(Blueprintable, BlueprintType, ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
@@ -18,22 +19,6 @@ public:
 	UPROPERTY(EditDefaultsOnly, Category = "Abilities")
 	TSubclassOf<class UFireRifleAbility> FireRifleAbilityClass;
 	
-	// /** Projectile class to spawn */
-	// UPROPERTY(EditDefaultsOnly, Category=Projectile)
-	// TSubclassOf<class AHallCrawlProjectile> ProjectileClass;
-	//
-	// /** Sound to play each time we fire */
-	// UPROPERTY(EditAnywhere, BlueprintReadWrite, Category=Gameplay)
-	// USoundBase* FireSound;
-	//
-	// /** AnimMontage to play each time we fire */
-	// UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Gameplay)
-	// UAnimMontage* FireAnimation;
-	//
-	// /** Gun muzzle's offset from the characters location */
-	// UPROPERTY(EditAnywhere, BlueprintReadWrite, Category=Gameplay)
-	// FVector MuzzleOffset;
-	//
 	/** MappingContext */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Input, meta=(AllowPrivateAccess = "true"))
 	class UInputMappingContext* FireMappingContext;
@@ -49,13 +34,29 @@ public:
 	/** Make the weapon Fire a Projectile */
 	UFUNCTION(BlueprintCallable, Category="Weapon")
 	void Fire();
+	
+	UFUNCTION(BlueprintCallable, Category="Weapon")
+	void StopFiring();
 
 protected:
+	virtual void TickComponent(float DeltaTime, enum ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 	/** Ends gameplay for this component. */
+
+	UFUNCTION()
+	virtual void BeginPlay() override;
+	
 	UFUNCTION()
 	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
+
+	void HandleSingleFire() const;
+	void HandleAutoFire();
+	void HandleBurstFire();
 	
+	UPROPERTY()
 	FGameplayAbilitySpecHandle FireAbilityHandle;
+
+	UPROPERTY()
+	UFireRifleAbility* FireAbility = nullptr;
 
 private:
 	/** The Character holding this weapon*/

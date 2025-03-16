@@ -44,11 +44,16 @@ class AHallCrawlCharacter : public ACharacter, public IAbilitySystemInterface
 	/** Look Input Action */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	class UInputAction* LookAction;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Gameplay,  meta = (AllowPrivateAccess = "true"))
+	FVector MuzzleOffset;
 	
 public:
 	AHallCrawlCharacter();
 
 	virtual UAbilitySystemComponent* GetAbilitySystemComponent() const override;
+
+	FVector GetMuzzleOffset() const;
 
 protected:
 	/** Called for movement input */

@@ -1,18 +1,12 @@
-// Copyright Epic Games, Inc. All Rights Reserved.
-
-
 #include "HallCrawlWeaponComponent.h"
 #include "HallCrawlCharacter.h"
-#include "HallCrawlProjectile.h"
 #include "GameFramework/PlayerController.h"
-#include "Camera/PlayerCameraManager.h"
-#include "Kismet/GameplayStatics.h"
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
 #include "FireRifleAbility.h"
-#include "Animation/AnimInstance.h"
 #include "Engine/LocalPlayer.h"
 #include "Engine/World.h"
+#include "AbilitySystemComponent.h"
 
 
 void UHallCrawlWeaponComponent::Fire()
@@ -54,11 +48,11 @@ bool UHallCrawlWeaponComponent::AttachWeapon(AHallCrawlCharacter* TargetCharacte
 	AttachToComponent(Character->GetMesh1P(), AttachmentRules, FName(TEXT("GripPoint")));
 
 	// Grant the FireRifleAbility to the character's AbilitySystemComponent
-        if (FireRifleAbilityClass && Character->GetAbilitySystemComponent())
-        {
-            FGameplayAbilitySpec AbilitySpec(FireRifleAbilityClass, 1, -1, this);
-            FireAbilityHandle = Character->GetAbilitySystemComponent()->GiveAbility(AbilitySpec);
-        }
+    if (FireRifleAbilityClass && Character->GetAbilitySystemComponent())
+    {
+        FGameplayAbilitySpec AbilitySpec(FireRifleAbilityClass, 1, -1, this);
+        FireAbilityHandle = Character->GetAbilitySystemComponent()->GiveAbility(AbilitySpec);
+    }
 
 	// Set up action bindings
 	if (APlayerController* PlayerController = Cast<APlayerController>(Character->GetController()))

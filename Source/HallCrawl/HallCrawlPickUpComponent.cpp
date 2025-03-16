@@ -2,6 +2,8 @@
 
 #include "HallCrawlPickUpComponent.h"
 
+#include "HallCrawlCharacter.h"
+
 UHallCrawlPickUpComponent::UHallCrawlPickUpComponent()
 {
 	// Setup the Sphere Collision

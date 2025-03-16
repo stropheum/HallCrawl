@@ -1,6 +1,6 @@
 ﻿#pragma once
 
-#include "HallCrawlPCH.h"
+#include "Abilities/GameplayAbility.h"
 #include "FireRifleAbility.generated.h"
 
 UCLASS()
@@ -17,7 +17,7 @@ public:
 		const FGameplayAbilityActivationInfo ActivationInfo,
 		const FGameplayEventData* TriggerEventData) override;
 
-	UPROPERTY(EditDefaultsOnly, Category=Projectile)
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category=Projectile)
 	TSubclassOf<class AHallCrawlProjectile> ProjectileClass;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category=Gameplay)

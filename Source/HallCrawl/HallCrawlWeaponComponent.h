@@ -2,7 +2,7 @@
 
 #pragma once
 
-#include "HallCrawlPCH.h"
+#include "GameplayAbilitySpecHandle.h"
 #include "Components/SkeletalMeshComponent.h"
 #include "HallCrawlWeaponComponent.generated.h"
 

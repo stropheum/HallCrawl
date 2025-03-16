@@ -2,9 +2,9 @@
 
 #pragma once
 
-#include "HallCrawlPCH.h"
 #include "Logging/LogMacros.h"
 #include "AbilitySystemInterface.h"
+#include "GameFramework/Character.h"
 #include "HallCrawlCharacter.generated.h"
 
 class UInputComponent;
@@ -57,7 +57,7 @@ protected:
 	/** Called for looking input */
 	void Look(const FInputActionValue& Value);
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Abilities")
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Abilities", meta = (AllowPrivateAccess = "true"))
 	UAbilitySystemComponent* AbilitySystemComponent;
 
 protected:

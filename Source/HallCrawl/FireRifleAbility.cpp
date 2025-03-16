@@ -30,6 +30,12 @@ void UFireRifleAbility::ActivateAbility(
 	{
 		return;
 	}
+
+	if (ProjectileClass == nullptr)
+	{
+		ProjectileClass = AHallCrawlProjectile::StaticClass();
+	}
+	check(ProjectileClass);
 	
 	// Try and fire a projectile
 	if (ProjectileClass != nullptr)

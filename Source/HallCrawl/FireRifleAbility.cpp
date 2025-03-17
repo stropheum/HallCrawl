@@ -60,8 +60,8 @@ void UFireRifleAbility::EndAbility(const FGameplayAbilitySpecHandle Handle, cons
 	if (!Character) { return; }
 	UAbilitySystemComponent* Asc = Character->GetAbilitySystemComponent();
 	
-	const FGameplayTag TriggerTag = FGameplayTag::RequestGameplayTag(FName("Weapon.Trigger.Triggered"));
-	const FGameplayTag OngoingTag = FGameplayTag::RequestGameplayTag(FName("Weapon.Trigger.Ongoing"));
+	const FGameplayTag TriggerTag = FGameplayTag::RequestGameplayTag(TriggerTagName);
+	const FGameplayTag OngoingTag = FGameplayTag::RequestGameplayTag(OngoingTagName);
 	Asc->RemoveLooseGameplayTag(TriggerTag);
 	Asc->RemoveLooseGameplayTag(OngoingTag);
 }
@@ -83,9 +83,9 @@ void UFireRifleAbility::FireProjectile()
 		return;
 	}
 	
-	const FGameplayTag OngoingTag = FGameplayTag::RequestGameplayTag(FName("Weapon.Trigger.Ongoing"));
+	const FGameplayTag OngoingTag = FGameplayTag::RequestGameplayTag(OngoingTagName);
 	if (const UAbilitySystemComponent* Asc = Character->GetAbilitySystemComponent();
-		FireMode == EFireMode::Single && Asc->HasMatchingGameplayTag(OngoingTag)) { return; }
+		FireMode != EFireMode::Auto && Asc->HasMatchingGameplayTag(OngoingTag)) { return; }
 	
 	if (ProjectileClass == nullptr)
 	{
@@ -103,28 +103,11 @@ void UFireRifleAbility::FireProjectile()
 	
 	if (FireAnimation != nullptr)
 	{
-		UAnimInstance* AnimInstance = Character->GetMesh1P()->GetAnimInstance();
-		if (AnimInstance != nullptr)
+		if (UAnimInstance* AnimInstance = Character->GetMesh1P()->GetAnimInstance(); AnimInstance != nullptr)
 		{
 			AnimInstance->Montage_Play(FireAnimation, 1.f);
 		}
 	}
-	
-	CurrentVolleyBulletsFired++;
-}
-
-void UFireRifleAbility::Reset()
-{
-	CurrentVolleyBulletsFired = 0;
-}
-
-void UFireRifleAbility::FireProjectileOngoing()
-{
-	if (!IsActive() || (FireMode != EFireMode::Auto && CurrentVolleyBulletsFired >= 0))
-	{
-		return;
-	}
-	FireProjectile();
 }
 
 void UFireRifleAbility::SpawnBullets()
@@ -137,27 +120,27 @@ void UFireRifleAbility::SpawnBullets()
 	}
 	
 	const APlayerController* PlayerController = Cast<APlayerController>(Character->GetController());
-	const FRotator SpawnRotation = PlayerController->PlayerCameraManager->GetCameraRotation();
+	const FRotator playerRotation = PlayerController->PlayerCameraManager->GetCameraRotation();
 	const FVector MuzzleOffset = Character->GetMuzzleOffset();
-	const FVector SpawnLocation = Character->GetActorLocation() + SpawnRotation.RotateVector(MuzzleOffset);
+	const FVector SpawnLocation = Character->GetActorLocation() + playerRotation.RotateVector(MuzzleOffset);
 	
 	if (FireMode == EFireMode::Burst)
 	{
 		FActorSpawnParameters ActorSpawnParams;
 		ActorSpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButDontSpawnIfColliding;
-		auto RightOffset = SpawnLocation + FVector(100.0f, 0.0f, 0.0f);
-		auto LeftOffset = SpawnLocation + FVector(-100.0f, 0.0f, 0.0f);
-		auto UpOffset = SpawnLocation + FVector(0.0f, 100.0f, 0.0f);
-		auto DownOffset = SpawnLocation + FVector(0.0f, -100.0f, 0.0f);
-		World->SpawnActor<AHallCrawlProjectile>(ProjectileClass, RightOffset, SpawnRotation, ActorSpawnParams);
-		World->SpawnActor<AHallCrawlProjectile>(ProjectileClass, LeftOffset, SpawnRotation, ActorSpawnParams);
-		World->SpawnActor<AHallCrawlProjectile>(ProjectileClass, UpOffset, SpawnRotation, ActorSpawnParams);
-		World->SpawnActor<AHallCrawlProjectile>(ProjectileClass, DownOffset, SpawnRotation, ActorSpawnParams);
+		auto RightOffset = SpawnLocation + playerRotation.RotateVector(FVector(0.0f, 50.0f, 0.0f));
+		auto LeftOffset = SpawnLocation + playerRotation.RotateVector(FVector(0.0f, -50.0f, 0.0f));
+		auto UpOffset = SpawnLocation + playerRotation.RotateVector(FVector(0.0f, 0.0f, 50.0f));
+		auto DownOffset = SpawnLocation + playerRotation.RotateVector(FVector(0.0f, 0.0f, -50.0f));
+		World->SpawnActor<AHallCrawlProjectile>(ProjectileClass, RightOffset, playerRotation, ActorSpawnParams);
+		World->SpawnActor<AHallCrawlProjectile>(ProjectileClass, LeftOffset, playerRotation, ActorSpawnParams);
+		World->SpawnActor<AHallCrawlProjectile>(ProjectileClass, UpOffset, playerRotation, ActorSpawnParams);
+		World->SpawnActor<AHallCrawlProjectile>(ProjectileClass, DownOffset, playerRotation, ActorSpawnParams);
 	}
 	else
-	{
+	{           
 		FActorSpawnParameters ActorSpawnParams;
 		ActorSpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButDontSpawnIfColliding;
-		AHallCrawlProjectile* Bullet = World->SpawnActor<AHallCrawlProjectile>(ProjectileClass, SpawnLocation, SpawnRotation, ActorSpawnParams);	
+		World->SpawnActor<AHallCrawlProjectile>(ProjectileClass, SpawnLocation, playerRotation, ActorSpawnParams);	
 	}
 }

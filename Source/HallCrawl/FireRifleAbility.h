@@ -30,9 +30,6 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "FireRifleAbility", meta = (AllowPrivateAccess = "true"))
 	void FireProjectile();
-	
-	UFUNCTION(BlueprintCallable, Category = "FireRifleAbility", meta = (AllowPrivateAccess = "true"))
-	void Reset();
 
 	const FName TriggerTagName = FName("Weapon.Trigger.Triggered");
 	const FName OngoingTagName = FName("Weapon.Trigger.Ongoing");
@@ -65,7 +62,4 @@ public:
 protected:
 	UPROPERTY()
 	UAbilityTask_WaitDelay* FireTask = nullptr;
-
-	UPROPERTY()
-	int CurrentVolleyBulletsFired = 0;
 };

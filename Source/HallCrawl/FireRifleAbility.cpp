@@ -120,27 +120,27 @@ void UFireRifleAbility::SpawnBullets()
 	}
 	
 	const APlayerController* PlayerController = Cast<APlayerController>(Character->GetController());
-	const FRotator playerRotation = PlayerController->PlayerCameraManager->GetCameraRotation();
+	const FRotator PlayerRotation = PlayerController->PlayerCameraManager->GetCameraRotation();
 	const FVector MuzzleOffset = Character->GetMuzzleOffset();
-	const FVector SpawnLocation = Character->GetActorLocation() + playerRotation.RotateVector(MuzzleOffset);
+	const FVector SpawnLocation = Character->GetActorLocation() + PlayerRotation.RotateVector(MuzzleOffset);
 	
 	if (FireMode == EFireMode::Burst)
 	{
 		FActorSpawnParameters ActorSpawnParams;
 		ActorSpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButDontSpawnIfColliding;
-		auto RightOffset = SpawnLocation + playerRotation.RotateVector(FVector(0.0f, 50.0f, 0.0f));
-		auto LeftOffset = SpawnLocation + playerRotation.RotateVector(FVector(0.0f, -50.0f, 0.0f));
-		auto UpOffset = SpawnLocation + playerRotation.RotateVector(FVector(0.0f, 0.0f, 50.0f));
-		auto DownOffset = SpawnLocation + playerRotation.RotateVector(FVector(0.0f, 0.0f, -50.0f));
-		World->SpawnActor<AHallCrawlProjectile>(ProjectileClass, RightOffset, playerRotation, ActorSpawnParams);
-		World->SpawnActor<AHallCrawlProjectile>(ProjectileClass, LeftOffset, playerRotation, ActorSpawnParams);
-		World->SpawnActor<AHallCrawlProjectile>(ProjectileClass, UpOffset, playerRotation, ActorSpawnParams);
-		World->SpawnActor<AHallCrawlProjectile>(ProjectileClass, DownOffset, playerRotation, ActorSpawnParams);
+		auto RightOffset = SpawnLocation + PlayerRotation.RotateVector(FVector(0.0f, 50.0f, 0.0f));
+		auto LeftOffset = SpawnLocation + PlayerRotation.RotateVector(FVector(0.0f, -50.0f, 0.0f));
+		auto UpOffset = SpawnLocation + PlayerRotation.RotateVector(FVector(0.0f, 0.0f, 50.0f));
+		auto DownOffset = SpawnLocation + PlayerRotation.RotateVector(FVector(0.0f, 0.0f, -50.0f));
+		World->SpawnActor<AHallCrawlProjectile>(ProjectileClass, RightOffset, PlayerRotation, ActorSpawnParams);
+		World->SpawnActor<AHallCrawlProjectile>(ProjectileClass, LeftOffset, PlayerRotation, ActorSpawnParams);
+		World->SpawnActor<AHallCrawlProjectile>(ProjectileClass, UpOffset, PlayerRotation, ActorSpawnParams);
+		World->SpawnActor<AHallCrawlProjectile>(ProjectileClass, DownOffset, PlayerRotation, ActorSpawnParams);
 	}
 	else
 	{           
 		FActorSpawnParameters ActorSpawnParams;
 		ActorSpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButDontSpawnIfColliding;
-		World->SpawnActor<AHallCrawlProjectile>(ProjectileClass, SpawnLocation, playerRotation, ActorSpawnParams);	
+		World->SpawnActor<AHallCrawlProjectile>(ProjectileClass, SpawnLocation, PlayerRotation, ActorSpawnParams);	
 	}
 }

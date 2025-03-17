@@ -13,34 +13,37 @@ class HALLCRAWL_API UFireRifleAbility : public UGameplayAbility
 	GENERATED_BODY()
 
 public:
+	UFireRifleAbility();
+	
 	virtual void ActivateAbility(
 		const FGameplayAbilitySpecHandle Handle,
 		const FGameplayAbilityActorInfo* ActorInfo,
 		const FGameplayAbilityActivationInfo ActivationInfo,
 		const FGameplayEventData* TriggerEventData) override;
-
+	
 	virtual void EndAbility(
 		const FGameplayAbilitySpecHandle Handle,
 		const FGameplayAbilityActorInfo* ActorInfo,
 		const FGameplayAbilityActivationInfo ActivationInfo,
 		bool bReplicateEndAbility,
 		bool bWasCancelled) override;
+
+	UFUNCTION(BlueprintCallable, Category = "FireRifleAbility", meta = (AllowPrivateAccess = "true"))
+	void FireProjectile();
+	
+	UFUNCTION(BlueprintCallable, Category = "FireRifleAbility", meta = (AllowPrivateAccess = "true"))
+	void Reset();
+
+	const FName TriggerTagName = FName("Weapon.Trigger.Triggered");
+	const FName OngoingTagName = FName("Weapon.Trigger.Ongoing");
 	
 protected:
-	UFUNCTION()
-	void FireProjectile();
 
-	UFUNCTION()
-	void HandleSingleFire();
-
-	UFUNCTION()
-	void HandleAutoFire();
-	
-	UFUNCTION()
-	void HandleBurstFire();
+	UFUNCTION(BlueprintCallable, Category = "FireRifleAbility", meta = (AllowPrivateAccess = "true"))
+	void SpawnBullets();
 
 	UPROPERTY()
-	class AHallCrawlCharacter* Character;
+	class AHallCrawlCharacter* Character = nullptr;
 	
 public:
 
@@ -62,4 +65,7 @@ public:
 protected:
 	UPROPERTY()
 	UAbilityTask_WaitDelay* FireTask = nullptr;
+
+	UPROPERTY()
+	int CurrentVolleyBulletsFired = 0;
 };

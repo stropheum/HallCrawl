@@ -10,7 +10,7 @@
 #include "AbilitySystemComponent.h"
 
 
-void UHallCrawlWeaponComponent::Fire()
+void UHallCrawlWeaponComponent::Fire(const bool IsTriggered)
 {
 	if (!Character || !Character->GetController())
 	{
@@ -23,15 +23,28 @@ void UHallCrawlWeaponComponent::Fire()
 		UE_LOG(LogTemp, Warning, TEXT("No FireRifleAbility set"));
 		return;
 	}
+
+	UAbilitySystemComponent* Asc = Character->GetAbilitySystemComponent();
+	const FGameplayTag Tag = FGameplayTag::RequestGameplayTag(IsTriggered
+		? FName("Weapon.Trigger.Triggered")
+		: FName("Weapon.Trigger.Ongoing"));
+	Asc->AddLooseGameplayTag(Tag);
 	
-	if (!Character->GetAbilitySystemComponent()->TryActivateAbility(FireAbilityHandle))
+	if (!Asc->TryActivateAbility(FireAbilityHandle))
 	{
 		UE_LOG(LogTemp, Warning, TEXT("Fire weapon attempt(by handle) failed"));
-		if (FireRifleAbilityClass && !Character->GetAbilitySystemComponent()->TryActivateAbilityByClass(FireRifleAbilityClass))
-		{
-			UE_LOG(LogTemp, Warning, TEXT("Fire weapon attempt(by class) failed"));
-		}
 	}
+}
+
+
+void UHallCrawlWeaponComponent::FireTriggered()
+{
+	Fire(true);
+}
+
+void UHallCrawlWeaponComponent::FireOngoing()
+{
+	Fire(false);
 }
 
 void UHallCrawlWeaponComponent::StopFiring()
@@ -57,10 +70,6 @@ void UHallCrawlWeaponComponent::TickComponent(
 	FActorComponentTickFunction* ThisTickFunction)
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
-	if (FireAbilityHandle.IsValid() && FireAbility->FireMode == EFireMode::Auto && FireAbility->IsActive())
-	{
-		HandleAutoFire();
-	}
 }
 
 void UHallCrawlWeaponComponent::BeginPlay()
@@ -104,7 +113,8 @@ bool UHallCrawlWeaponComponent::AttachWeapon(AHallCrawlCharacter* TargetCharacte
 		if (UEnhancedInputComponent* EnhancedInputComponent = Cast<UEnhancedInputComponent>(PlayerController->InputComponent))
 		{
 			// Fire
-			EnhancedInputComponent->BindAction(FireAction, ETriggerEvent::Triggered, this, &UHallCrawlWeaponComponent::Fire);
+			EnhancedInputComponent->BindAction(FireAction, ETriggerEvent::Started, this, &UHallCrawlWeaponComponent::FireTriggered);
+			EnhancedInputComponent->BindAction(FireAction, ETriggerEvent::Ongoing, this, &UHallCrawlWeaponComponent::FireOngoing);
 			EnhancedInputComponent->BindAction(FireAction, ETriggerEvent::Completed, this, &UHallCrawlWeaponComponent::StopFiring);
 		}
 	}
@@ -131,12 +141,3 @@ void UHallCrawlWeaponComponent::EndPlay(const EEndPlayReason::Type EndPlayReason
 	// maintain the EndPlay call chain
 	Super::EndPlay(EndPlayReason);
 }
-
-void UHallCrawlWeaponComponent::HandleSingleFire() const
-{
-	
-}
-
-void UHallCrawlWeaponComponent::HandleAutoFire() {}
-
-void UHallCrawlWeaponComponent::HandleBurstFire() {}

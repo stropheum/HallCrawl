@@ -15,9 +15,6 @@ class HALLCRAWL_API UHallCrawlPickUpComponent : public USphereComponent
 	GENERATED_BODY()
 
 public:
-
-	// UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Abilities")
- //    TSubclassOf<class UFireRifleAbility> FireRifleAbilityClass;
 	
 	/** Delegate to whom anyone can subscribe to receive this event */
 	UPROPERTY(BlueprintAssignable, Category = "Interaction")

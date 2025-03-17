@@ -31,10 +31,15 @@ public:
 	UFUNCTION(BlueprintCallable, Category="Weapon")
 	bool AttachWeapon(AHallCrawlCharacter* TargetCharacter);
 
-	/** Make the weapon Fire a Projectile */
 	UFUNCTION(BlueprintCallable, Category="Weapon")
-	void Fire();
+	void Fire(const bool IsTriggered);
 	
+	UFUNCTION(BlueprintCallable, Category="Weapon")
+	void FireTriggered();
+
+	UFUNCTION(BlueprintCallable, Category="Weapon")
+	void FireOngoing();
+
 	UFUNCTION(BlueprintCallable, Category="Weapon")
 	void StopFiring();
 
@@ -47,10 +52,6 @@ protected:
 	
 	UFUNCTION()
 	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
-
-	void HandleSingleFire() const;
-	void HandleAutoFire();
-	void HandleBurstFire();
 	
 	UPROPERTY()
 	FGameplayAbilitySpecHandle FireAbilityHandle;

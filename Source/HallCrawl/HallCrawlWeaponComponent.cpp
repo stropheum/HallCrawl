@@ -86,10 +86,23 @@ bool UHallCrawlWeaponComponent::AttachWeapon(AHallCrawlCharacter* TargetCharacte
 	{
 		return false;
 	}
-	
-	// Attach the weapon to the First Person Character
-	FAttachmentTransformRules AttachmentRules(EAttachmentRule::SnapToTarget, true);
-	AttachToComponent(Character->GetMesh1P(), AttachmentRules, FName(TEXT("GripPoint")));
+
+	const FAttachmentTransformRules AttachmentRules(EAttachmentRule::SnapToTarget, true);
+	USkeletalMeshComponent* Mesh1P = Character->GetMesh1P();
+	const FName SocketName = FName(TEXT("GripPoint"));
+	TArray<USceneComponent*> AttachedComponents;
+	Mesh1P->GetChildrenComponents(false, AttachedComponents);
+
+	for (USceneComponent* Component : AttachedComponents)
+	{
+		if (Component && Component->GetAttachSocketName() == SocketName)
+		{
+			Component->DetachFromComponent(FDetachmentTransformRules::KeepWorldTransform);
+			Component->DestroyComponent();
+		}
+	}
+
+	AttachToComponent(Mesh1P, AttachmentRules, SocketName);
 
 	// Grant the FireRifleAbility to the character's AbilitySystemComponent
 	if (FireRifleAbilityClass && Character->GetAbilitySystemComponent())

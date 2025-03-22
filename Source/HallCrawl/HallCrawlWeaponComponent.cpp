@@ -8,6 +8,7 @@
 #include "Engine/LocalPlayer.h"
 #include "Engine/World.h"
 #include "AbilitySystemComponent.h"
+#include "HallCrawlPlayerController.h"
 
 
 void UHallCrawlWeaponComponent::Fire(const bool IsTriggered)
@@ -75,6 +76,7 @@ void UHallCrawlWeaponComponent::TickComponent(
 void UHallCrawlWeaponComponent::BeginPlay()
 {
 	Super::BeginPlay();
+	ensureMsgf(RenderTargetMaterial, TEXT("RenderTargetMaterial != nullptr"));
 }
 
 bool UHallCrawlWeaponComponent::AttachWeapon(AHallCrawlCharacter* TargetCharacter)
@@ -114,7 +116,7 @@ bool UHallCrawlWeaponComponent::AttachWeapon(AHallCrawlCharacter* TargetCharacte
 	}
 
 	// Set up action bindings
-	if (APlayerController* PlayerController = Cast<APlayerController>(Character->GetController()))
+	if (AHallCrawlPlayerController* PlayerController = Cast<AHallCrawlPlayerController>(Character->GetController()))
 	{
 		if (UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(
 			PlayerController->GetLocalPlayer()))
@@ -130,6 +132,9 @@ bool UHallCrawlWeaponComponent::AttachWeapon(AHallCrawlCharacter* TargetCharacte
 			EnhancedInputComponent->BindAction(FireAction, ETriggerEvent::Ongoing, this, &UHallCrawlWeaponComponent::FireOngoing);
 			EnhancedInputComponent->BindAction(FireAction, ETriggerEvent::Completed, this, &UHallCrawlWeaponComponent::StopFiring);
 		}
+
+		ensureMsgf(RenderTargetMaterial, TEXT("RenderTargetMaterial != nullptr"));
+		PlayerController->SetEquippedWeaponHudMaterial(RenderTargetMaterial);
 	}
 
 	return true;

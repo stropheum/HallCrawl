@@ -6,6 +6,12 @@ void AHallCrawlPlayerController::BeginPlay()
 {
 	Super::BeginPlay();
 
-	check(Hud);
-	Hud->AddToViewport();
+	ensureMsgf(EquippedWeaponWidget, TEXT("EquippedWeaponWidget != nullptr"));
+	EquippedWeaponWidget->AddToViewport();
+}
+
+void AHallCrawlPlayerController::SetEquippedWeaponHudMaterial_Implementation(UMaterial* NewMaterial)
+{
+	if (!ensureMsgf(EquippedWeaponWidget, TEXT("EquippedWeaponWidget != nullptr"))) { return; }
+	EquippedWeaponWidget->SetWeaponImageMaterial(NewMaterial);
 }

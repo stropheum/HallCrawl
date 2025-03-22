@@ -45,13 +45,15 @@ public:
 
 protected:
 	virtual void TickComponent(float DeltaTime, enum ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
-	/** Ends gameplay for this component. */
 
 	UFUNCTION()
 	virtual void BeginPlay() override;
 	
 	UFUNCTION()
 	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = PickupWeapon, meta = (AllowPrivateAccess = "true"))
+	UMaterial* RenderTargetMaterial = nullptr;
 	
 	UPROPERTY()
 	FGameplayAbilitySpecHandle FireAbilityHandle;

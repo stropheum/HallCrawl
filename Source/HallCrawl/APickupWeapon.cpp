@@ -1,16 +1,21 @@
 ﻿#include "APickupWeapon.h"
 #include "Components/SceneCaptureComponent2D.h"
+#include "UObject/FastReferenceCollector.h"
 
 
 AAPickupWeapon::AAPickupWeapon()
 {
 	PrimaryActorTick.bCanEverTick = true;
-	
-	RootComponent = CreateDefaultSubobject<USceneComponent>(TEXT("Root"));
+
+	if (!RootComponent)
+	{
+		RootComponent = CreateDefaultSubobject<USceneComponent>(TEXT("Root"));	
+	}
 	
 	SceneCaptureComponent2D = CreateDefaultSubobject<USceneCaptureComponent2D>(TEXT("SceneCaptureComponent2D"));
-	SceneCaptureComponent2D->SetRelativeLocation(FVector(-60, 10, 0));
+	SceneCaptureComponent2D->PrimitiveRenderMode = ESceneCapturePrimitiveRenderMode::PRM_UseShowOnlyList
 	SceneCaptureComponent2D->SetupAttachment(RootComponent);
+	SceneCaptureComponent2D->SetRelativeLocation(FVector(-60, 10, 0));
 }
 
 void AAPickupWeapon::BeginPlay()

@@ -17,9 +17,6 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = PickupWeapon, meta = (AllowPrivateAccess = "true"))
 	USceneCaptureComponent2D* SceneCaptureComponent2D = nullptr;
 	
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = PickupWeapon, meta = (AllowPrivateAccess = "true"))
-	UMaterial* RenderTargetMaterial = nullptr;
-	
 	virtual void BeginPlay() override;
 
 public:

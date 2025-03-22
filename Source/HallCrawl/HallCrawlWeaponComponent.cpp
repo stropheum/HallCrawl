@@ -30,11 +30,7 @@ void UHallCrawlWeaponComponent::Fire(const bool IsTriggered)
 		? FName("Weapon.Trigger.Triggered")
 		: FName("Weapon.Trigger.Ongoing"));
 	Asc->AddLooseGameplayTag(Tag);
-	
-	if (!Asc->TryActivateAbility(FireAbilityHandle))
-	{
-		UE_LOG(LogTemp, Warning, TEXT("Fire weapon attempt(by handle) failed"));
-	}
+	Asc->TryActivateAbility(FireAbilityHandle);
 }
 
 

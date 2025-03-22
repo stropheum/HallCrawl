@@ -142,11 +142,18 @@ bool UHallCrawlWeaponComponent::AttachWeapon(AHallCrawlCharacter* TargetCharacte
 
 void UHallCrawlWeaponComponent::EndPlay(const EEndPlayReason::Type EndPlayReason)
 {
+	StopFiring();
 	// ensure we have a character owner
 	if (Character != nullptr)
 	{
+		UAbilitySystemComponent* Asc = Character->GetAbilitySystemComponent();
+		FGameplayTagContainer LooseGameplayTags;
+		LooseGameplayTags.AddTag(FGameplayTag::RequestGameplayTag(FName("Weapon.Trigger.Triggered")));
+		LooseGameplayTags.AddTag(FGameplayTag::RequestGameplayTag(FName("Weapon.Trigger.Ongoing")));
+		Asc->RemoveLooseGameplayTags(LooseGameplayTags);
+		
 		// remove the input mapping context from the Player Controller
-		if (APlayerController* PlayerController = Cast<APlayerController>(Character->GetController()))
+		if (const APlayerController* PlayerController = Cast<APlayerController>(Character->GetController()))
 		{
 			if (UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(
 				PlayerController->GetLocalPlayer()))

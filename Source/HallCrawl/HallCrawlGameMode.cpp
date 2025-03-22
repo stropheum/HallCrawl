@@ -1,7 +1,6 @@
 // Copyright Epic Games, Inc. All Rights Reserved.
 
 #include "HallCrawlGameMode.h"
-#include "HallCrawlCharacter.h"
 #include "UObject/ConstructorHelpers.h"
 
 AHallCrawlGameMode::AHallCrawlGameMode()

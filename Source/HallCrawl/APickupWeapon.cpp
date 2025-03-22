@@ -1,6 +1,5 @@
 ﻿#include "APickupWeapon.h"
 #include "Components/SceneCaptureComponent2D.h"
-#include "UObject/FastReferenceCollector.h"
 
 
 AAPickupWeapon::AAPickupWeapon()
@@ -13,7 +12,7 @@ AAPickupWeapon::AAPickupWeapon()
 	}
 	
 	SceneCaptureComponent2D = CreateDefaultSubobject<USceneCaptureComponent2D>(TEXT("SceneCaptureComponent2D"));
-	SceneCaptureComponent2D->PrimitiveRenderMode = ESceneCapturePrimitiveRenderMode::PRM_UseShowOnlyList
+	SceneCaptureComponent2D->PrimitiveRenderMode = ESceneCapturePrimitiveRenderMode::PRM_UseShowOnlyList;
 	SceneCaptureComponent2D->SetupAttachment(RootComponent);
 	SceneCaptureComponent2D->SetRelativeLocation(FVector(-60, 10, 0));
 }

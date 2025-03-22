@@ -18,4 +18,5 @@ void UEquippedWeaponWidget::SetWeaponImageMaterial(UMaterial* NewMaterial) const
 {
 	if (!ensureMsgf(WeaponImage, TEXT("WeaponImage != nullptr"))) { return; }
 	WeaponImage->SetBrushFromMaterial(NewMaterial);
+	WeaponImage->SetVisibility(NewMaterial != nullptr ? ESlateVisibility::Visible : ESlateVisibility::Hidden);
 }

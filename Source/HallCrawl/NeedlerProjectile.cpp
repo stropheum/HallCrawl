@@ -1,8 +1,11 @@
 ﻿#include "NeedlerProjectile.h"
 
-#include "PhysicsAssetUtils.h"
 #include "Components/SphereComponent.h"
+#include "Engine/OverlapResult.h"
 #include "GameFramework/ProjectileMovementComponent.h"
+#include "NiagaraFunctionLibrary.h"
+#include "NiagaraSystem.h"
+#include "Kismet/GameplayStatics.h"
 
 
 ANeedlerProjectile::ANeedlerProjectile()
@@ -26,6 +29,53 @@ void ANeedlerProjectile::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor,
 	}
 }
 
+void ANeedlerProjectile::ExplodeFromSource(ANeedlerProjectile* ProjectileExplosionSource)
+{
+	if (ImpactComponent.IsValid())
+	{
+		ImpactComponent->AddImpulseAtLocation(ImpactVelocity, GetActorLocation());	
+	}
+	
+	HasHit = false;
+
+	if (ExplosionNiagaraSystem)
+	{
+		UNiagaraFunctionLibrary::SpawnSystemAtLocation(
+			GetWorld(),
+			ExplosionNiagaraSystem,
+			GetActorLocation(),
+			GetActorRotation(),
+			FVector(1.f, 1.f, 1.f),
+			true);
+	}
+	
+	if (ProjectileExplosionSource == this && ExplosionSound)
+	{
+		UGameplayStatics::PlaySoundAtLocation(GetWorld(), ExplosionSound, GetActorLocation());
+	}
+
+	Destroy();
+
+	if (const UWorld* World = GetWorld())
+	{
+		TArray<FOverlapResult> OverlapResults;
+		FCollisionShape CollisionShape;
+		CollisionShape.SetSphere(ExplosionRadius);
+
+		World->OverlapMultiByChannel(
+			OverlapResults, GetActorLocation(), FQuat::Identity, ECC_GameTraceChannel1, CollisionShape);
+
+		for (const FOverlapResult& Overlap : OverlapResults)
+		{
+			if (ANeedlerProjectile* OtherProjectile = Cast<ANeedlerProjectile>(Overlap.GetActor());
+				OtherProjectile && OtherProjectile != this && !OtherProjectile->IsPendingKillPending())
+			{
+				OtherProjectile->ExplodeFromSource(this);
+			}
+		}
+	}
+}
+
 void ANeedlerProjectile::BeginPlay()
 {
 	Super::BeginPlay();
@@ -33,7 +83,7 @@ void ANeedlerProjectile::BeginPlay()
 	if (!ensureMsgf(RootComp, TEXT("Root Component failed to cast to UPrimitiveComponent"))) { return; }
 
 	RootComp->SetCollisionObjectType(ECC_GameTraceChannel1);
-	RootComp->SetCollisionResponseToChannel(ECC_GameTraceChannel1, ECR_Ignore);
+	RootComp->SetCollisionResponseToChannel(ECC_GameTraceChannel1, ECR_Overlap);
 }
 
 void ANeedlerProjectile::Tick(const float DeltaTime)
@@ -50,9 +100,7 @@ void ANeedlerProjectile::Tick(const float DeltaTime)
 		ElapsedTimeSinceHit += DeltaTime;
 		if (ElapsedTimeSinceHit >= ExplosionDelay)
 		{
-			ImpactComponent->AddImpulseAtLocation(ImpactVelocity, GetActorLocation());
-			HasHit = false;
-			Destroy();
+			ExplodeFromSource(this);
 		}
 	}
 }

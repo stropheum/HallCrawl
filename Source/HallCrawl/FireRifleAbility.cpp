@@ -9,24 +9,6 @@
 #include "Widgets/Text/ISlateEditableTextWidget.h"
 
 
-UFireRifleAbility::UFireRifleAbility()
-{
-	FGameplayTag NewTag;
-	switch (FireMode)
-	{
-	case EFireMode::Single:
-		NewTag = FGameplayTag::RequestGameplayTag(FName("Weapon.Rifle.Single"));
-		break;
-	case EFireMode::Auto:
-		NewTag = FGameplayTag::RequestGameplayTag(FName("Weapon.Rifle.Auto"));
-		break;
-	case EFireMode::Burst:
-		NewTag = FGameplayTag::RequestGameplayTag(FName("Weapon.Rifle.Burst"));
-		break;
-	}
-	AbilityTags.AddTag(NewTag);
-}
-
 void UFireRifleAbility::ActivateAbility(
 	const FGameplayAbilitySpecHandle Handle,
 	const FGameplayAbilityActorInfo* ActorInfo,
@@ -130,7 +112,7 @@ void UFireRifleAbility::SpawnBullets(const FGameplayAbilitySpec AbilitySpec)
 			FMath::RandRange(-OriginSpread, OriginSpread),
 			0.0f,
 			FMath::RandRange(-OriginSpread, OriginSpread));
-		SpawnLocation += PlayerRotation.RotateVector(SpreadOffset); 
+		SpawnLocation += PlayerRotation.RotateVector(SpreadOffset);
 	}
 
 	if (FireMode == EFireMode::Burst)

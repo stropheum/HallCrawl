@@ -13,7 +13,6 @@ class HALLCRAWL_API UFireRifleAbility : public UGameplayAbility
 	GENERATED_BODY()
 
 public:
-	UFireRifleAbility();
 
 	virtual void ActivateAbility(
 		const FGameplayAbilitySpecHandle Handle,

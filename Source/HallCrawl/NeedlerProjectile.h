@@ -17,7 +17,7 @@ public:
 
 protected:
 	virtual void BeginPlay() override;
-	
+
 	UPROPERTY()
 	float ExplosionDelay = 1.5f;
 

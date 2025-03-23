@@ -14,7 +14,6 @@ class AHallCrawlProjectile : public AActor
 	GENERATED_BODY()
 
 protected:
-
 	/** Sphere collision component */
 	UPROPERTY(VisibleDefaultsOnly, Category=Projectile)
 	USphereComponent* CollisionComp;

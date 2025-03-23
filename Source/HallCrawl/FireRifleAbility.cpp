@@ -94,7 +94,7 @@ void UFireRifleAbility::FireProjectile(const FGameplayAbilitySpecHandle Handle)
 	}
 	check(ProjectileClass);
 
-	SpawnBullets();
+	SpawnBullets(*AbilitySpec);
 
 	if (FireSound != nullptr)
 	{
@@ -110,7 +110,7 @@ void UFireRifleAbility::FireProjectile(const FGameplayAbilitySpecHandle Handle)
 	}
 }
 
-void UFireRifleAbility::SpawnBullets()
+void UFireRifleAbility::SpawnBullets(const FGameplayAbilitySpec AbilitySpec)
 {
 	UWorld* const World = GetWorld();
 	if (!World)
@@ -122,7 +122,16 @@ void UFireRifleAbility::SpawnBullets()
 	const APlayerController* PlayerController = Cast<APlayerController>(Character->GetController());
 	const FRotator PlayerRotation = PlayerController->PlayerCameraManager->GetCameraRotation();
 	const FVector MuzzleOffset = Character->GetMuzzleOffset();
-	const FVector SpawnLocation = Character->GetActorLocation() + PlayerRotation.RotateVector(MuzzleOffset);
+	auto SpawnLocation = Character->GetActorLocation() + PlayerRotation.RotateVector(MuzzleOffset);
+
+	if (AbilitySpec.GetDynamicSpecSourceTags().HasTag(FGameplayTag::RequestGameplayTag(OngoingTagName)))
+	{
+		FVector SpreadOffset = FVector(
+			FMath::RandRange(-OriginSpread, OriginSpread),
+			0.0f,
+			FMath::RandRange(-OriginSpread, OriginSpread));
+		SpawnLocation += PlayerRotation.RotateVector(SpreadOffset); 
+	}
 
 	if (FireMode == EFireMode::Burst)
 	{

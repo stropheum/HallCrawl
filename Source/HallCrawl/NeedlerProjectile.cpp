@@ -17,11 +17,11 @@ void ANeedlerProjectile::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor,
 	{
 		ImpactComponent = OtherComp;
 		ImpactVelocity = GetVelocity() * 100.0f;
-		
+
 		ProjectileMovement->StopMovementImmediately();
 		CollisionComp->Deactivate();
 		RootComponent->AttachToComponent(OtherComp, FAttachmentTransformRules::KeepWorldTransform, NAME_None);
-		
+
 		HasHit = true;
 	}
 }
@@ -31,7 +31,7 @@ void ANeedlerProjectile::BeginPlay()
 	Super::BeginPlay();
 	UPrimitiveComponent* RootComp = Cast<UPrimitiveComponent>(GetRootComponent());
 	if (!ensureMsgf(RootComp, TEXT("Root Component failed to cast to UPrimitiveComponent"))) { return; }
-	
+
 	RootComp->SetCollisionObjectType(ECC_GameTraceChannel1);
 	RootComp->SetCollisionResponseToChannel(ECC_GameTraceChannel1, ECR_Ignore);
 }
@@ -46,7 +46,7 @@ void ANeedlerProjectile::Tick(const float DeltaTime)
 		{
 			Destroy();
 		}
-		
+
 		ElapsedTimeSinceHit += DeltaTime;
 		if (ElapsedTimeSinceHit >= ExplosionDelay)
 		{

@@ -36,7 +36,7 @@ public:
 
 protected:
 	UFUNCTION(BlueprintCallable, Category = "FireRifleAbility", meta = (AllowPrivateAccess = "true"))
-	void SpawnBullets();
+	void SpawnBullets(const FGameplayAbilitySpec AbilitySpec);
 
 	UPROPERTY()
 	class AHallCrawlCharacter* Character = nullptr;
@@ -56,6 +56,9 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Gameplay)
 	float FireRate = 0.15f;
+
+	UPROPERTY(EditAnywhere, blueprintreadwrite, Category = Gameplay)
+	float OriginSpread = 0.0f;
 
 protected:
 	UPROPERTY()

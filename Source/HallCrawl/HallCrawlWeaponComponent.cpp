@@ -18,7 +18,7 @@ void UHallCrawlWeaponComponent::Fire(const bool IsTriggered)
 		UE_LOG(LogTemp, Warning, TEXT("Attempted to fire with improper conditions"));
 		return;
 	}
-	
+
 	if (!FireAbilityHandle.IsValid() || !FireAbility)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("No FireRifleAbility set"));
@@ -26,10 +26,14 @@ void UHallCrawlWeaponComponent::Fire(const bool IsTriggered)
 	}
 
 	UAbilitySystemComponent* Asc = Character->GetAbilitySystemComponent();
+	FGameplayAbilitySpec* AbilitySpec = Asc->FindAbilitySpecFromHandle(FireAbilityHandle);
+	ensureMsgf(AbilitySpec, TEXT("Ability spec not found for fire ability handle"));
+
 	const FGameplayTag Tag = FGameplayTag::RequestGameplayTag(IsTriggered
-		? FName("Weapon.Trigger.Triggered")
-		: FName("Weapon.Trigger.Ongoing"));
-	Asc->AddLooseGameplayTag(Tag);
+		                                                          ? FName("Weapon.Trigger.Triggered")
+		                                                          : FName("Weapon.Trigger.Ongoing"));
+
+	AbilitySpec->GetDynamicSpecSourceTags().AddTag(Tag);
 	Asc->TryActivateAbility(FireAbilityHandle);
 }
 
@@ -51,13 +55,13 @@ void UHallCrawlWeaponComponent::StopFiring()
 		UE_LOG(LogTemp, Warning, TEXT("Attempted to fire with improper conditions"));
 		return;
 	}
-	
+
 	if (!FireAbilityHandle.IsValid() || !FireAbility)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("No FireRifleAbility set"));
 		return;
 	}
-	
+
 	Character->GetAbilitySystemComponent()->CancelAbilityHandle(FireAbilityHandle);
 }
 
@@ -79,7 +83,6 @@ bool UHallCrawlWeaponComponent::AttachWeapon(AHallCrawlCharacter* TargetCharacte
 {
 	Character = TargetCharacter;
 
-	// Check that the character is valid, and has no weapon component yet
 	if (Character == nullptr || Character->GetInstanceComponents().FindItemByClass<UHallCrawlWeaponComponent>())
 	{
 		return false;
@@ -102,7 +105,6 @@ bool UHallCrawlWeaponComponent::AttachWeapon(AHallCrawlCharacter* TargetCharacte
 
 	AttachToComponent(Mesh1P, AttachmentRules, SocketName);
 
-	// Grant the FireRifleAbility to the character's AbilitySystemComponent
 	if (FireRifleAbilityClass && Character->GetAbilitySystemComponent())
 	{
 		const FGameplayAbilitySpec AbilitySpec(FireRifleAbilityClass, 1, -1, this);
@@ -111,19 +113,16 @@ bool UHallCrawlWeaponComponent::AttachWeapon(AHallCrawlCharacter* TargetCharacte
 		check(FireAbility);
 	}
 
-	// Set up action bindings
 	if (AHallCrawlPlayerController* PlayerController = Cast<AHallCrawlPlayerController>(Character->GetController()))
 	{
 		if (UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(
 			PlayerController->GetLocalPlayer()))
 		{
-			// Set the priority of the mapping to 1, so that it overrides the Jump action with the Fire action when using touch input
 			Subsystem->AddMappingContext(FireMappingContext, 1);
 		}
 
 		if (UEnhancedInputComponent* EnhancedInputComponent = Cast<UEnhancedInputComponent>(PlayerController->InputComponent))
 		{
-			// Fire
 			EnhancedInputComponent->BindAction(FireAction, ETriggerEvent::Started, this, &UHallCrawlWeaponComponent::FireTriggered);
 			EnhancedInputComponent->BindAction(FireAction, ETriggerEvent::Ongoing, this, &UHallCrawlWeaponComponent::FireOngoing);
 			EnhancedInputComponent->BindAction(FireAction, ETriggerEvent::Completed, this, &UHallCrawlWeaponComponent::StopFiring);
@@ -142,12 +141,16 @@ void UHallCrawlWeaponComponent::EndPlay(const EEndPlayReason::Type EndPlayReason
 	// ensure we have a character owner
 	if (Character != nullptr)
 	{
-		UAbilitySystemComponent* Asc = Character->GetAbilitySystemComponent();
-		FGameplayTagContainer LooseGameplayTags;
-		LooseGameplayTags.AddTag(FGameplayTag::RequestGameplayTag(FName("Weapon.Trigger.Triggered")));
-		LooseGameplayTags.AddTag(FGameplayTag::RequestGameplayTag(FName("Weapon.Trigger.Ongoing")));
-		Asc->RemoveLooseGameplayTags(LooseGameplayTags);
-		
+		const UAbilitySystemComponent* Asc = Character->GetAbilitySystemComponent();
+		FGameplayAbilitySpec* AbilitySpec = Asc->FindAbilitySpecFromHandle(FireAbilityHandle);
+		ensureMsgf(AbilitySpec, TEXT("Ability spec not found for fire ability handle"));
+
+		FGameplayTagContainer TagsToRemove;
+		TagsToRemove.AddTag(FGameplayTag::RequestGameplayTag(FName("Weapon.Trigger.Triggered")));
+		TagsToRemove.AddTag(FGameplayTag::RequestGameplayTag(FName("Weapon.Trigger.Ongoing")));
+
+		AbilitySpec->GetDynamicSpecSourceTags().RemoveTags(TagsToRemove);
+
 		// remove the input mapping context from the Player Controller
 		if (const APlayerController* PlayerController = Cast<APlayerController>(Character->GetController()))
 		{

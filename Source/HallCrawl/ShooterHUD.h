@@ -10,7 +10,6 @@ class HALLCRAWL_API AShooterHUD : public AHUD
 	GENERATED_BODY()
 
 protected:
-
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
 	ABrush* EquippedWeaponPreviewBrush = nullptr;
 };

@@ -14,13 +14,13 @@ class HALLCRAWL_API UFireRifleAbility : public UGameplayAbility
 
 public:
 	UFireRifleAbility();
-	
+
 	virtual void ActivateAbility(
 		const FGameplayAbilitySpecHandle Handle,
 		const FGameplayAbilityActorInfo* ActorInfo,
 		const FGameplayAbilityActivationInfo ActivationInfo,
 		const FGameplayEventData* TriggerEventData) override;
-	
+
 	virtual void EndAbility(
 		const FGameplayAbilitySpecHandle Handle,
 		const FGameplayAbilityActorInfo* ActorInfo,
@@ -29,27 +29,25 @@ public:
 		bool bWasCancelled) override;
 
 	UFUNCTION(BlueprintCallable, Category = "FireRifleAbility", meta = (AllowPrivateAccess = "true"))
-	void FireProjectile();
+	void FireProjectile(const FGameplayAbilitySpecHandle Handle);
 
 	const FName TriggerTagName = FName("Weapon.Trigger.Triggered");
 	const FName OngoingTagName = FName("Weapon.Trigger.Ongoing");
-	
-protected:
 
+protected:
 	UFUNCTION(BlueprintCallable, Category = "FireRifleAbility", meta = (AllowPrivateAccess = "true"))
 	void SpawnBullets();
 
 	UPROPERTY()
 	class AHallCrawlCharacter* Character = nullptr;
-	
-public:
 
+public:
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category=Projectile)
 	TSubclassOf<class AHallCrawlProjectile> ProjectileClass;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category=Gameplay)
 	USoundBase* FireSound = nullptr;
-	
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Gameplay)
 	UAnimMontage* FireAnimation = nullptr;
 

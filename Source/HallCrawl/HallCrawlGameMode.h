@@ -13,6 +13,3 @@ class AHallCrawlGameMode : public AGameModeBase
 public:
 	AHallCrawlGameMode();
 };
-
-
-

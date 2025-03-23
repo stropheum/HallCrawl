@@ -8,9 +8,9 @@ AAPickupWeapon::AAPickupWeapon()
 
 	if (!RootComponent)
 	{
-		RootComponent = CreateDefaultSubobject<USceneComponent>(TEXT("Root"));	
+		RootComponent = CreateDefaultSubobject<USceneComponent>(TEXT("Root"));
 	}
-	
+
 	SceneCaptureComponent2D = CreateDefaultSubobject<USceneCaptureComponent2D>(TEXT("SceneCaptureComponent2D"));
 	SceneCaptureComponent2D->PrimitiveRenderMode = ESceneCapturePrimitiveRenderMode::PRM_UseShowOnlyList;
 	SceneCaptureComponent2D->SetupAttachment(RootComponent);
@@ -28,4 +28,3 @@ void AAPickupWeapon::Tick(const float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 }
-

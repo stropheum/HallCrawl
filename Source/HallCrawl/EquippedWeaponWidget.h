@@ -12,17 +12,14 @@ class HALLCRAWL_API UEquippedWeaponWidget : public UUserWidget
 	GENERATED_BODY()
 
 	virtual void NativePreConstruct() override;
-	
+
 	virtual void NativeConstruct() override;
 
 protected:
-	
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category=EquippedWeapon, meta=(AllowPrivateAccess=true))
 	UImage* WeaponImage = nullptr;
 
 public:
-
 	UFUNCTION()
 	void SetWeaponImageMaterial(UMaterial* NewMaterial) const;
-	
 };

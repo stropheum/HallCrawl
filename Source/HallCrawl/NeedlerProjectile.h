@@ -16,13 +16,23 @@ public:
 	                   UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit) override;
 
 	UFUNCTION()
-	void ExplodeFromSource(ANeedlerProjectile* ProjectileExplosionSource);
+	void Explode();
+
 
 protected:
 	virtual void BeginPlay() override;
+	
+	UFUNCTION()
+	void ResetNeedlesOnTarget(const AActor* Target);
+
+	UFUNCTION()
+	void TickBackExplosionTimer();
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category=Needler, meta=(AllowPrivateAccess=true))
 	float ExplosionDelay = 1.5f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category=Needler, meta=(AllowPrivateAccess=true))
+	float AccumulationTickBack = 0.25f;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category=Needler, meta=(AllowPrivateAccess=true))
 	float ExplosionRadius = 5.0f;
@@ -41,4 +51,5 @@ protected:
 	float ElapsedTimeSinceHit = 0.0f;
 	TWeakObjectPtr<UPrimitiveComponent> ImpactComponent;
 	bool HasHit = false;
+	bool IsFirstToHitTarget = false;
 };

@@ -1,7 +1,6 @@
 ﻿#include "NeedlerProjectile.h"
 
 #include "Components/SphereComponent.h"
-#include "Engine/OverlapResult.h"
 #include "GameFramework/ProjectileMovementComponent.h"
 #include "NiagaraFunctionLibrary.h"
 #include "NiagaraSystem.h"
@@ -26,10 +25,11 @@ void ANeedlerProjectile::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor,
 		RootComponent->AttachToComponent(OtherComp, FAttachmentTransformRules::KeepWorldTransform, NAME_None);
 
 		HasHit = true;
+		ResetNeedlesOnTarget(OtherActor);
 	}
 }
 
-void ANeedlerProjectile::ExplodeFromSource(ANeedlerProjectile* ProjectileExplosionSource)
+void ANeedlerProjectile::Explode()
 {
 	if (ImpactComponent.IsValid())
 	{
@@ -48,31 +48,45 @@ void ANeedlerProjectile::ExplodeFromSource(ANeedlerProjectile* ProjectileExplosi
 			FVector(1.f, 1.f, 1.f),
 			true);
 	}
-	
-	if (ProjectileExplosionSource == this && ExplosionSound)
+
+	if (IsFirstToHitTarget)
 	{
-		UGameplayStatics::PlaySoundAtLocation(GetWorld(), ExplosionSound, GetActorLocation());
+		UGameplayStatics::PlaySoundAtLocation(GetWorld(), ExplosionSound, GetActorLocation());	
 	}
 
 	Destroy();
+}
 
-	if (const UWorld* World = GetWorld())
+void ANeedlerProjectile::ResetNeedlesOnTarget(const AActor* Target)
+{
+	int NeedleCount = 0;
+	TArray<AActor*> AttachedActors;
+	Target->GetAttachedActors(AttachedActors);
+	
+	for (AActor* Actor : AttachedActors)
 	{
-		TArray<FOverlapResult> OverlapResults;
-		FCollisionShape CollisionShape;
-		CollisionShape.SetSphere(ExplosionRadius);
-
-		World->OverlapMultiByChannel(
-			OverlapResults, GetActorLocation(), FQuat::Identity, ECC_GameTraceChannel1, CollisionShape);
-
-		for (const FOverlapResult& Overlap : OverlapResults)
+		if (ANeedlerProjectile* const NeedlerProjectile = Cast<ANeedlerProjectile>(Actor))
 		{
-			if (ANeedlerProjectile* OtherProjectile = Cast<ANeedlerProjectile>(Overlap.GetActor());
-				OtherProjectile && OtherProjectile != this && !OtherProjectile->IsPendingKillPending())
-			{
-				OtherProjectile->ExplodeFromSource(this);
-			}
+			NeedlerProjectile->TickBackExplosionTimer();
+			NeedleCount++;
 		}
+
+		FString Message = FString::Printf(TEXT("Reset %d Needles"), NeedleCount);
+		GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Emerald, Message);
+	}
+
+	if (NeedleCount == 1)
+	{
+		IsFirstToHitTarget = true;
+	}
+}
+
+void ANeedlerProjectile::TickBackExplosionTimer()
+{
+	ElapsedTimeSinceHit -= AccumulationTickBack;
+	if (ElapsedTimeSinceHit < 0)
+	{
+		ElapsedTimeSinceHit = 0;
 	}
 }
 
@@ -100,7 +114,7 @@ void ANeedlerProjectile::Tick(const float DeltaTime)
 		ElapsedTimeSinceHit += DeltaTime;
 		if (ElapsedTimeSinceHit >= ExplosionDelay)
 		{
-			ExplodeFromSource(this);
+			Explode();
 		}
 	}
 }

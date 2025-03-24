@@ -53,9 +53,6 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Gameplay)
 	EFireMode FireMode = EFireMode::Single;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Gameplay)
-	float FireRate = 0.15f;
-
 	UPROPERTY(EditAnywhere, blueprintreadwrite, Category = Gameplay)
 	float OriginSpread = 0.0f;
 

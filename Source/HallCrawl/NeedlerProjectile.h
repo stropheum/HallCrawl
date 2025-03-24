@@ -35,7 +35,7 @@ protected:
 	float AccumulationTickBack = 0.25f;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category=Needler, meta=(AllowPrivateAccess=true))
-	float ExplosionRadius = 5.0f;
+	float ExplosionForce = 25.0f;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category=Needler, meta=(AllowPrivateAccess=true))
 	class UNiagaraSystem* ExplosionNiagaraSystem = nullptr;
@@ -47,7 +47,7 @@ public:
 	virtual void Tick(float DeltaTime) override;
 
 protected:
-	FVector ImpactVelocity = FVector::Zero();
+	FVector ImpactVector = FVector::Zero();
 	float ElapsedTimeSinceHit = 0.0f;
 	TWeakObjectPtr<UPrimitiveComponent> ImpactComponent;
 	bool HasHit = false;

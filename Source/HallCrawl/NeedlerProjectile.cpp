@@ -18,7 +18,7 @@ void ANeedlerProjectile::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor,
 	if ((OtherActor != nullptr) && (OtherActor != this) && (OtherComp != nullptr) && OtherComp->IsSimulatingPhysics())
 	{
 		ImpactComponent = OtherComp;
-		ImpactVelocity = GetVelocity() * 100.0f;
+		ImpactVector = GetVelocity();
 
 		ProjectileMovement->StopMovementImmediately();
 		CollisionComp->Deactivate();
@@ -33,7 +33,7 @@ void ANeedlerProjectile::Explode()
 {
 	if (ImpactComponent.IsValid())
 	{
-		ImpactComponent->AddImpulseAtLocation(ImpactVelocity, GetActorLocation());	
+		ImpactComponent->AddImpulseAtLocation(ImpactVector * ExplosionForce, GetActorLocation());	
 	}
 	
 	HasHit = false;

@@ -22,8 +22,13 @@ class HALLCRAWL_API UAttributeSetBase : public UAttributeSet
 
 public:
 
-	void ApplyDamage(const FGameplayEffectModCallbackData& Data);
+	UAttributeSetBase();
 	
+	static FName GetDamageTagName() { return FName("Damage.Amount"); }
+
+	virtual void PreAttributeBaseChange(const FGameplayAttribute& Attribute, float& NewValue) const override;
+	virtual void PostGameplayEffectExecute(const struct FGameplayEffectModCallbackData& Data) override;
+
 	UPROPERTY(BlueprintAssignable, Category="Events")
 	FOnHealthChanged OnHealthChanged;
 
@@ -35,8 +40,24 @@ public:
 	ATTRIBUTE_ACCESSORS(UAttributeSetBase, Health)
 
 	UPROPERTY(BlueprintReadOnly, Category="Attributes", meta=(AllowPrivateAccess="true"))
+	FGameplayAttributeData MaxHealth;
+	ATTRIBUTE_ACCESSORS(UAttributeSetBase, MaxHealth)
+
+	UPROPERTY(BlueprintReadOnly, Category="Attributes", meta=(AllowPrivateAccess="true"))
 	FGameplayAttributeData Shield;
 	ATTRIBUTE_ACCESSORS(UAttributeSetBase, Shield)
+
+	UPROPERTY(BlueprintReadOnly, Category="Attributes", meta=(AllowPrivateAccess="true"))
+	FGameplayAttributeData MaxShield;
+	ATTRIBUTE_ACCESSORS(UAttributeSetBase, MaxShield)
+
+	UPROPERTY(BlueprintReadOnly, Category="Attributes", meta=(AllowPrivateAccess="true"))
+	FGameplayAttributeData ShieldRegenDelay;
+	ATTRIBUTE_ACCESSORS(UAttributeSetBase, ShieldRegenDelay)
+
+	UPROPERTY(BlueprintReadOnly, Category="Attributes", meta=(AllowPrivateAccess="true"))
+	FGameplayAttributeData ShieldRegenRate;
+	ATTRIBUTE_ACCESSORS(UAttributeSetBase, ShieldRegenRate)
 
 	virtual void PreAttributeChange(const FGameplayAttribute& Attribute, float& NewValue) override;
 

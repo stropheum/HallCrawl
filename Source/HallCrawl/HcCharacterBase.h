@@ -4,6 +4,8 @@
 #include "AbilitySystemInterface.h"
 #include "GameplayEffectTypes.h"
 #include "AttributeSetBase.h"
+#include "DamageEffect.h"
+#include "ShieldRegenEffect.h"
 #include "GameFramework/Character.h"
 #include "HcCharacterBase.generated.h"
 
@@ -20,6 +22,7 @@ public:
 	
 	AHcCharacterBase();
 
+
 protected:
 	
 	virtual void BeginPlay() override;
@@ -35,6 +38,16 @@ protected:
 
 	UPROPERTY(BlueprintReadOnly, Category=HcCharacter, meta=(AllowPrivateAccess=true))
 	UAttributeSetBase* HealthAttributeSet = nullptr;
+	
+	UPROPERTY(BlueprintReadOnly, Category=HcCharacter, meta=(AllowPrivateAccess=true))
+	TSubclassOf<UGameplayEffect> DamageEffectClass = UDamageEffect::StaticClass();
+	
+	UPROPERTY(BlueprintReadOnly, Category=HcCharacter, meta=(AllowPrivateAccess=true))
+	TSubclassOf<UGameplayEffect> ShieldRegenEffectClass = UShieldRegenEffect::StaticClass();
+	
+	FActiveGameplayEffectHandle ShieldRegenHandle;
+	float TimeSinceLastDamage = 0.0f;
+	bool bIsRegenerating = false;
 
 public:
 

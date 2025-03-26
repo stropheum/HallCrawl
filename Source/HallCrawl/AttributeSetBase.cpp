@@ -2,28 +2,46 @@
 #include "GameplayEffectExtension.h"
 
 
-void UAttributeSetBase::ApplyDamage(const FGameplayEffectModCallbackData& Data)
+UAttributeSetBase::UAttributeSetBase()
 {
-	float Damage = Data.EvaluatedData.Magnitude;
-	float HealthDamageApplied = 0.0f;
-	float ShieldDamageApplied;
-	if (Damage > Shield.GetCurrentValue())
-	{
-		HealthDamageApplied = Damage - Shield.GetCurrentValue();
-		ShieldDamageApplied = Shield.GetCurrentValue();
-		SetHealth(FMath::Max(Health.GetCurrentValue() - HealthDamageApplied, 0.0f));
-		Damage -= Shield.GetCurrentValue();
-		SetShield(0.0f);
-	}
-	else
-	{
-		ShieldDamageApplied = Damage;
-	}
-	
-	SetShield(FMath::Max(Shield.GetCurrentValue() - Damage, 0.0f));
+	Health = 100.0f;
+	MaxHealth = 100.0f;
+	Shield = 100.0f;
+	MaxShield = 100.0f;
+	ShieldRegenDelay = 5.0f;
+	ShieldRegenRate = 20.0f;
+}
 
-	OnHealthChanged.Broadcast(Health.GetCurrentValue(), -HealthDamageApplied);
-	OnShieldChanged.Broadcast(Shield.GetCurrentValue(), -ShieldDamageApplied);
+void UAttributeSetBase::PreAttributeBaseChange(const FGameplayAttribute& Attribute, float& NewValue) const
+{
+	Super::PreAttributeBaseChange(Attribute, NewValue);
+
+	if (Attribute == GetHealthAttribute())
+	{
+		NewValue = FMath::Clamp(NewValue, 0.0f, GetMaxHealth());
+	}
+	else if (Attribute == GetShieldAttribute())
+	{
+		NewValue = FMath::Clamp(NewValue, 0.0f, GetMaxShield());
+	}
+}
+
+void UAttributeSetBase::PostGameplayEffectExecute(const FGameplayEffectModCallbackData& Data)
+{
+	Super::PostGameplayEffectExecute(Data);
+
+	if (Data.EvaluatedData.Attribute == GetHealthAttribute())
+	{
+		const float NewHealth = GetHealth();
+		const float Delta = NewHealth - Data.EvaluatedData.Magnitude;
+		OnHealthChanged.Broadcast(NewHealth, Delta);
+	}
+	else if (Data.EvaluatedData.Attribute == GetShieldAttribute())
+	{
+		const float NewShield = GetShield();
+		const float Delta = NewShield - Data.EvaluatedData.Magnitude;
+		OnHealthChanged.Broadcast(NewShield, Delta);
+	}
 }
 
 void UAttributeSetBase::PreAttributeChange(const FGameplayAttribute& Attribute, float& NewValue)

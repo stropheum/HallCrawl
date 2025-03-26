@@ -1,6 +1,6 @@
-﻿#include "AttributeSetBase.h"
+﻿#include "HcPlayerState.h"
+#include "AttributeSetBase.h"
 #include "HcAbilitySystemComponent.h"
-#include "HcPlayerState.h"
 
 
 AHcPlayerState::AHcPlayerState()
@@ -10,7 +10,6 @@ AHcPlayerState::AHcPlayerState()
 	AbilitySystemComponent->SetReplicationMode(EGameplayEffectReplicationMode::Mixed);
 
 	AttributeSetBase = CreateDefaultSubobject<UAttributeSetBase>(TEXT("HealthAttributeSet"));
-	DeadTag = FGameplayTag::RequestGameplayTag("State.Dead");
 }
 
 UAttributeSetBase* AHcPlayerState::GetAttributeSetBase() const

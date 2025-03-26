@@ -28,5 +28,5 @@ protected:
 	class UHcAbilitySystemComponent* AbilitySystemComponent;
 
 	UPROPERTY()
-	class UAttributeSetBase* AttributeSetBase;
+	UAttributeSetBase* AttributeSetBase;
 };

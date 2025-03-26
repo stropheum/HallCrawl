@@ -1,5 +1,6 @@
 ﻿#include "NeedlerProjectile.h"
 
+#include "HcCharacterBase.h"
 #include "Components/SphereComponent.h"
 #include "GameFramework/ProjectileMovementComponent.h"
 #include "NiagaraFunctionLibrary.h"
@@ -15,8 +16,9 @@ ANeedlerProjectile::ANeedlerProjectile()
 void ANeedlerProjectile::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor,
                                UPrimitiveComponent* OtherComp, const FVector NormalImpulse, const FHitResult& Hit)
 {
-	if ((OtherActor != nullptr) && (OtherActor != this) && (OtherComp != nullptr) && OtherComp->IsSimulatingPhysics())
+	if (OtherActor != nullptr && OtherActor != this && OtherComp != nullptr)
 	{
+		ImpactCharacter = Cast<AHcCharacterBase>(OtherActor);
 		ImpactComponent = OtherComp;
 		ImpactVector = GetVelocity();
 
@@ -33,6 +35,10 @@ void ANeedlerProjectile::Explode()
 {
 	if (ImpactComponent.IsValid())
 	{
+		if (ImpactCharacter.IsValid())
+		{
+			ImpactCharacter->Damage(NeedleDamage);
+		}
 		ImpactComponent->AddImpulseAtLocation(ImpactVector * ExplosionForce, GetActorLocation());	
 	}
 	
@@ -70,9 +76,6 @@ void ANeedlerProjectile::ResetNeedlesOnTarget(const AActor* Target)
 			NeedlerProjectile->TickBackExplosionTimer();
 			NeedleCount++;
 		}
-
-		FString Message = FString::Printf(TEXT("Reset %d Needles"), NeedleCount);
-		GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Emerald, Message);
 	}
 
 	if (NeedleCount == 1)

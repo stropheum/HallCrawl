@@ -4,6 +4,8 @@
 #include "HallCrawlProjectile.h"
 #include "NeedlerProjectile.generated.h"
 
+class AHcCharacterBase;
+
 UCLASS()
 class HALLCRAWL_API ANeedlerProjectile : public AHallCrawlProjectile
 {
@@ -36,6 +38,9 @@ protected:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category=Needler, meta=(AllowPrivateAccess=true))
 	float ExplosionForce = 25.0f;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category=Needler, meta=(AllowPrivateAccess=true))
+	float NeedleDamage = 5.0f;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category=Needler, meta=(AllowPrivateAccess=true))
 	class UNiagaraSystem* ExplosionNiagaraSystem = nullptr;
@@ -49,6 +54,7 @@ public:
 protected:
 	FVector ImpactVector = FVector::Zero();
 	float ElapsedTimeSinceHit = 0.0f;
+	TWeakObjectPtr<AHcCharacterBase> ImpactCharacter;
 	TWeakObjectPtr<UPrimitiveComponent> ImpactComponent;
 	bool HasHit = false;
 	bool IsFirstToHitTarget = false;

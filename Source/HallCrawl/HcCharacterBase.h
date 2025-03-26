@@ -31,6 +31,8 @@ protected:
 	
 	void OnShieldChangeCallback(const FOnAttributeChangeData& Data) const;
 
+	void TriggerRagdoll();
+
 	virtual UAbilitySystemComponent* GetAbilitySystemComponent() const override;
 
 	UPROPERTY(BlueprintReadOnly, Category=HcCharacter, meta=(AllowPrivateAccess=true))

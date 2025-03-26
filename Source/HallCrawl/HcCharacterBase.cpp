@@ -51,6 +51,20 @@ void AHcCharacterBase::OnShieldChangeCallback(const FOnAttributeChangeData& Data
 	}
 }
 
+void AHcCharacterBase::TriggerRagdoll()
+{
+	USkeletalMeshComponent* Mesh = GetMesh();
+	if (Mesh)
+	{
+		Mesh->SetSimulatePhysics(true);
+		Mesh->WakeAllRigidBodies();
+		Mesh->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+
+		DisableInput(nullptr);
+		SetLifeSpan(10.0f);
+	}
+}
+
 UAbilitySystemComponent* AHcCharacterBase::GetAbilitySystemComponent() const
 {
 	return AbilitySystemComponent;

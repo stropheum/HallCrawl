@@ -1,5 +1,8 @@
 ﻿#include "HcCharacterBase.h"
 
+#include "Components/CapsuleComponent.h"
+#include "GameFramework/CharacterMovementComponent.h"
+
 
 AHcCharacterBase::AHcCharacterBase()
 {
@@ -24,14 +27,14 @@ void AHcCharacterBase::BeginPlay()
 		.AddUObject(this, &AHcCharacterBase::OnShieldChangeCallback);
 }
 
-void AHcCharacterBase::OnHealthChangeCallback(const FOnAttributeChangeData& Data) const
+void AHcCharacterBase::OnHealthChangeCallback(const FOnAttributeChangeData& Data)
 {
 	GEngine->AddOnScreenDebugMessage(
 		-1, 5.f, FColor::Red, FString::Printf(TEXT("%s Health: %f"), *GetName(), Data.NewValue));
 
 	if (Data.NewValue <= 0.0f)
 	{
-		//TODO: die
+		TriggerRagdoll();
 	}
 }
 
@@ -53,21 +56,35 @@ void AHcCharacterBase::OnShieldChangeCallback(const FOnAttributeChangeData& Data
 
 void AHcCharacterBase::TriggerRagdoll()
 {
-	USkeletalMeshComponent* Mesh = GetMesh();
-	if (Mesh)
+	if (USkeletalMeshComponent* SkeletalMesh = GetMesh())
 	{
-		Mesh->SetSimulatePhysics(true);
-		Mesh->WakeAllRigidBodies();
-		Mesh->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+		UCapsuleComponent* Capsule = GetCapsuleComponent();
+		Capsule->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+		Capsule->SetSimulatePhysics(false);
+		
+		GetCharacterMovement()->DisableMovement();
+		SkeletalMesh->SetSimulatePhysics(true);
+		SkeletalMesh->WakeAllRigidBodies();
+		SkeletalMesh->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+		SkeletalMesh->SetEnableGravity(true);
+		SkeletalMesh->SetLinearDamping(0.5f);
+		SkeletalMesh->SetAngularDamping(0.5f);
+		SkeletalMesh->SetAllBodiesBelowSimulatePhysics("root", true);
 
 		DisableInput(nullptr);
-		SetLifeSpan(10.0f);
+		bIsDead = true;
+		SetLifeSpan(30.0f);
 	}
 }
 
 UAbilitySystemComponent* AHcCharacterBase::GetAbilitySystemComponent() const
 {
 	return AbilitySystemComponent;
+}
+
+bool AHcCharacterBase::IsDead() const
+{
+	return bIsDead;
 }
 
 void AHcCharacterBase::Damage(const float Damage) const

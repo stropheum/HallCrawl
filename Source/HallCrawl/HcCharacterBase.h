@@ -22,12 +22,14 @@ public:
 	
 	AHcCharacterBase();
 
+	UFUNCTION()
+	bool IsDead() const;
 
 protected:
 	
 	virtual void BeginPlay() override;
 
-	void OnHealthChangeCallback(const FOnAttributeChangeData& Data) const;
+	void OnHealthChangeCallback(const FOnAttributeChangeData& Data);
 	
 	void OnShieldChangeCallback(const FOnAttributeChangeData& Data) const;
 
@@ -50,6 +52,7 @@ protected:
 	FActiveGameplayEffectHandle ShieldRegenHandle;
 	float TimeSinceLastDamage = 0.0f;
 	bool bIsRegenerating = false;
+	bool bIsDead = false;
 
 public:
 

@@ -5,6 +5,8 @@
 #include "GameFramework/ProjectileMovementComponent.h"
 #include "NiagaraFunctionLibrary.h"
 #include "NiagaraSystem.h"
+#include "VectorTypes.h"
+#include "Components/CapsuleComponent.h"
 #include "Kismet/GameplayStatics.h"
 
 
@@ -39,7 +41,16 @@ void ANeedlerProjectile::Explode()
 		{
 			ImpactCharacter->Damage(NeedleDamage);
 		}
-		ImpactComponent->AddImpulseAtLocation(ImpactVector * ExplosionForce, GetActorLocation());	
+		if (!ImpactCharacter.IsValid() && ImpactComponent->IsSimulatingPhysics())
+		{
+			ImpactComponent->AddImpulseAtLocation(ImpactVector * ExplosionForce, GetActorLocation());	
+		}
+		else if (ImpactCharacter.IsValid() && ImpactCharacter->IsDead())
+		{
+			auto NormalizedImpactVector = ImpactVector;
+			NormalizedImpactVector.Normalize();
+			ImpactCharacter->GetMesh()->AddImpulseAtLocation(NormalizedImpactVector * ExplosionForce, GetActorLocation());	
+		}
 	}
 	
 	HasHit = false;

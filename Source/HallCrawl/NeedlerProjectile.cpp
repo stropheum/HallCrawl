@@ -1,9 +1,12 @@
 ﻿#include "NeedlerProjectile.h"
 
+#include "HcCharacterBase.h"
 #include "Components/SphereComponent.h"
 #include "GameFramework/ProjectileMovementComponent.h"
 #include "NiagaraFunctionLibrary.h"
 #include "NiagaraSystem.h"
+#include "VectorTypes.h"
+#include "Components/CapsuleComponent.h"
 #include "Kismet/GameplayStatics.h"
 
 
@@ -15,8 +18,9 @@ ANeedlerProjectile::ANeedlerProjectile()
 void ANeedlerProjectile::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor,
                                UPrimitiveComponent* OtherComp, const FVector NormalImpulse, const FHitResult& Hit)
 {
-	if ((OtherActor != nullptr) && (OtherActor != this) && (OtherComp != nullptr) && OtherComp->IsSimulatingPhysics())
+	if (OtherActor != nullptr && OtherActor != this && OtherComp != nullptr)
 	{
+		ImpactCharacter = Cast<AHcCharacterBase>(OtherActor);
 		ImpactComponent = OtherComp;
 		ImpactVector = GetVelocity();
 
@@ -33,7 +37,20 @@ void ANeedlerProjectile::Explode()
 {
 	if (ImpactComponent.IsValid())
 	{
-		ImpactComponent->AddImpulseAtLocation(ImpactVector * ExplosionForce, GetActorLocation());	
+		if (ImpactCharacter.IsValid())
+		{
+			ImpactCharacter->Damage(NeedleDamage);
+		}
+		if (!ImpactCharacter.IsValid() && ImpactComponent->IsSimulatingPhysics())
+		{
+			ImpactComponent->AddImpulseAtLocation(ImpactVector * ExplosionForce, GetActorLocation());	
+		}
+		else if (ImpactCharacter.IsValid() && ImpactCharacter->IsDead())
+		{
+			auto NormalizedImpactVector = ImpactVector;
+			NormalizedImpactVector.Normalize();
+			ImpactCharacter->GetMesh()->AddImpulseAtLocation(NormalizedImpactVector * ExplosionForce, GetActorLocation());	
+		}
 	}
 	
 	HasHit = false;
@@ -70,9 +87,6 @@ void ANeedlerProjectile::ResetNeedlesOnTarget(const AActor* Target)
 			NeedlerProjectile->TickBackExplosionTimer();
 			NeedleCount++;
 		}
-
-		FString Message = FString::Printf(TEXT("Reset %d Needles"), NeedleCount);
-		GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Emerald, Message);
 	}
 
 	if (NeedleCount == 1)

@@ -2,6 +2,8 @@
 
 #include "Components/CapsuleComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
+#include "HealthBarWidget.h"
+#include "Components/WidgetComponent.h"
 
 
 AHcCharacterBase::AHcCharacterBase()
@@ -19,21 +21,39 @@ void AHcCharacterBase::BeginPlay()
 	check(DamageEffectClass);
 	check(ShieldRegenEffectClass);
 
+	for (UActorComponent* Component : GetComponents())
+	{
+		if (UWidgetComponent* WidgetComponent = Cast<UWidgetComponent>(Component))
+		{
+			if (UHealthBarWidget* FoundWidget = Cast<UHealthBarWidget>(WidgetComponent->GetUserWidgetObject()))
+			{
+				HealthBarWidgetComponent = WidgetComponent;
+				HealthBarWidget = FoundWidget;
+				break;
+			}
+		}
+	}
+	check(HealthBarWidget);
+
 	AbilitySystemComponent->AddAttributeSetSubobject(HealthAttributeSet);
 
 	AbilitySystemComponent->GetGameplayAttributeValueChangeDelegate(HealthAttributeSet->GetHealthAttribute())
 		.AddUObject(this, &AHcCharacterBase::OnHealthChangeCallback);
 	AbilitySystemComponent->GetGameplayAttributeValueChangeDelegate(HealthAttributeSet->GetShieldAttribute())
 		.AddUObject(this, &AHcCharacterBase::OnShieldChangeCallback);
+
+	HealthBarWidget->UpdateValues(HealthAttributeSet);
 }
 
 void AHcCharacterBase::OnHealthChangeCallback(const FOnAttributeChangeData& Data)
 {
 	GEngine->AddOnScreenDebugMessage(
 		-1, 5.f, FColor::Red, FString::Printf(TEXT("%s Health: %f"), *GetName(), Data.NewValue));
+	HealthBarWidget->UpdateValues(HealthAttributeSet);
 
 	if (Data.NewValue <= 0.0f)
 	{
+		HealthBarWidget->SetVisibility(ESlateVisibility::Hidden);
 		TriggerRagdoll();
 	}
 }
@@ -42,6 +62,7 @@ void AHcCharacterBase::OnShieldChangeCallback(const FOnAttributeChangeData& Data
 {
 	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Blue,
 		FString::Printf(TEXT("%s Shield: %f"), *GetName(), Data.NewValue));
+	HealthBarWidget->UpdateValues(HealthAttributeSet);
 
 	if (Data.NewValue < Data.OldValue)
 	{
@@ -87,6 +108,22 @@ bool AHcCharacterBase::IsDead() const
 	return bIsDead;
 }
 
+void AHcCharacterBase::BillboardHealthBarToPlayer() const
+{
+	if (HealthBarWidget)
+	{
+		if (const APlayerController* PlayerController = GetWorld()->GetFirstPlayerController())
+		{
+			FVector CameraLocation;
+			FRotator CameraRotation;
+			PlayerController->GetPlayerViewPoint(CameraLocation, CameraRotation);
+			const FVector WidgetLocation = HealthBarWidgetComponent->GetComponentLocation();
+			const FRotator LookAtRotation = FRotationMatrix::MakeFromX(CameraLocation - WidgetLocation).Rotator();
+			HealthBarWidgetComponent->SetWorldRotation(FRotator(0.0f, LookAtRotation.Yaw, 0.0f));
+		}
+	}
+}
+
 void AHcCharacterBase::Damage(const float Damage) const
 {
 	const FGameplayEffectSpecHandle SpecHandle = AbilitySystemComponent->MakeOutgoingSpec(
@@ -124,6 +161,8 @@ void AHcCharacterBase::Tick(const float DeltaTime)
 		AbilitySystemComponent->RemoveActiveGameplayEffect(ShieldRegenHandle);
 		bIsRegenerating = false;
 	}
+
+	BillboardHealthBarToPlayer();
 }
 
 void AHcCharacterBase::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)

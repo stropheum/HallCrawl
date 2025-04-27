@@ -35,7 +35,7 @@ void ANeedlerProjectile::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor,
 
 void ANeedlerProjectile::Explode()
 {
-	if (ImpactComponent.IsValid())
+	if (ImpactComponent.IsValid()) 
 	{
 		if (ImpactCharacter.IsValid())
 		{

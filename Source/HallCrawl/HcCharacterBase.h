@@ -48,11 +48,20 @@ protected:
 	
 	UPROPERTY(BlueprintReadOnly, Category=HcCharacter, meta=(AllowPrivateAccess=true))
 	TSubclassOf<UGameplayEffect> ShieldRegenEffectClass = UShieldRegenEffect::StaticClass();
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category=HcCharacter, meta=(AllowPrivateAccess=true))
+	TObjectPtr<class UHealthBarWidget> HealthBarWidget = nullptr;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category=HcCharacter, meta=(AllowPrivateAccess=true))
+	TObjectPtr<class UWidgetComponent> HealthBarWidgetComponent = nullptr;
 	
 	FActiveGameplayEffectHandle ShieldRegenHandle;
 	float TimeSinceLastDamage = 0.0f;
 	bool bIsRegenerating = false;
 	bool bIsDead = false;
+
+private:
+	void BillboardHealthBarToPlayer() const;
 
 public:
 

@@ -47,8 +47,6 @@ void AHcCharacterBase::BeginPlay()
 
 void AHcCharacterBase::OnHealthChangeCallback(const FOnAttributeChangeData& Data)
 {
-	GEngine->AddOnScreenDebugMessage(
-		-1, 5.f, FColor::Red, FString::Printf(TEXT("%s Health: %f"), *GetName(), Data.NewValue));
 	HealthBarWidget->UpdateValues(HealthAttributeSet);
 
 	if (Data.NewValue <= 0.0f)
@@ -60,8 +58,6 @@ void AHcCharacterBase::OnHealthChangeCallback(const FOnAttributeChangeData& Data
 
 void AHcCharacterBase::OnShieldChangeCallback(const FOnAttributeChangeData& Data) const
 {
-	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Blue,
-		FString::Printf(TEXT("%s Shield: %f"), *GetName(), Data.NewValue));
 	HealthBarWidget->UpdateValues(HealthAttributeSet);
 
 	if (Data.NewValue < Data.OldValue)

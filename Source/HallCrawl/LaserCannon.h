@@ -6,6 +6,7 @@
 #include "GameFramework/Actor.h"
 #include "LaserCannon.generated.h"
 
+
 UCLASS()
 class HALLCRAWL_API ALaserCannon : public AActor
 {
@@ -20,6 +21,7 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Niagara")
 	class UNiagaraComponent* NiagaraEffect;
 
+
 protected:
 	virtual void BeginPlay() override;
 
@@ -30,16 +32,16 @@ private:
 	
 	void AlignToNearestActor(const float DeltaTime);
 	
-	void PerformRaycast();
+	void PerformRaycast() const;
 
-	void InitializeNiagaraSystem();
+	void InitializeNiagaraSystem() const;
 
-	void HandleMouseClick();
+	void Fire();
 
-	bool GetMouseClickPosition(FVector& OutHitLocation);
+	bool GetMouseClickPosition(FVector& OutHitLocation) const;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "LaserBeamComponent", meta = (AllowPrivateAccess = "true"))
-	class UInputAction* MouseClickAction;
+	class UInputAction* FireAction;
 
 	UPROPERTY()
 	APlayerController* PlayerController;

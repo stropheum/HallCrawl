@@ -4,6 +4,7 @@
 #include "GameFramework/PlayerController.h"
 #include "Engine/World.h"
 #include "DrawDebugHelpers.h"
+#include "EnhancedInputComponent.h"
 
 
 ALaserCannon::ALaserCannon()
@@ -36,16 +37,12 @@ void ALaserCannon::BeginPlay()
 		return;
 	}
 
-	if (InputComponent)
+	const auto PlayerInputComponent = PlayerController->InputComponent;
+	if (UEnhancedInputComponent* EnhancedInputComponent = Cast<UEnhancedInputComponent>(PlayerInputComponent))
 	{
-		InputComponent->BindAction("Fire", IE_Pressed, this, &ALaserCannon::HandleMouseClick);
+		EnhancedInputComponent->BindAction(FireAction, ETriggerEvent::Started, this, &ALaserCannon::Fire);	
 	}
-	else
-	{
-		UE_LOG(LogTemp, Warning, TEXT("InputComponent not found on owner!"));
-		return;
-	}
-
+	
 	InitializeNiagaraSystem();
 }
 
@@ -68,7 +65,7 @@ void ALaserCannon::AlignToNearestActor(const float DeltaTime)
 	SetActorRotation(Rotation);
 }
 
-void ALaserCannon::PerformRaycast()
+void ALaserCannon::PerformRaycast() const
 {
 	const FVector Start = GetActorLocation();
 	const FVector ForwardVector = GetActorForwardVector();
@@ -102,7 +99,7 @@ void ALaserCannon::PerformRaycast()
 	NiagaraEffect->SetVectorParameter("Beam End", Hit.ImpactPoint);
 }
 
-void ALaserCannon::InitializeNiagaraSystem()
+void ALaserCannon::InitializeNiagaraSystem() const
 {
 	if (NiagaraEffect && NiagaraSystemAsset)
 	{
@@ -118,7 +115,7 @@ void ALaserCannon::InitializeNiagaraSystem()
 	}
 }
 
-void ALaserCannon::HandleMouseClick()
+void ALaserCannon::Fire()
 {
 	if (!NiagaraEffect || !PlayerController)
 	{
@@ -138,7 +135,7 @@ void ALaserCannon::HandleMouseClick()
 	}
 }
 
-bool ALaserCannon::GetMouseClickPosition(FVector& OutHitLocation)
+bool ALaserCannon::GetMouseClickPosition(FVector& OutHitLocation) const
 {
 	if (!PlayerController)
 	{

@@ -1,5 +1,4 @@
 #include "HallCrawlWeaponComponent.h"
-
 #include "HallCrawlCharacter.h"
 #include "GameFramework/PlayerController.h"
 #include "EnhancedInputComponent.h"
@@ -9,9 +8,10 @@
 #include "Engine/World.h"
 #include "AbilitySystemComponent.h"
 #include "HallCrawlPlayerController.h"
+#include "LaserCannon.h"
 
 
-void UHallCrawlWeaponComponent::Fire(const bool IsTriggered)
+void UHallCrawlWeaponComponent::Fire(const bool IsTriggered) const
 {
 	if (!Character || !Character->GetController())
 	{
@@ -77,6 +77,26 @@ void UHallCrawlWeaponComponent::BeginPlay()
 {
 	Super::BeginPlay();
 	ensureMsgf(RenderTargetMaterial, TEXT("RenderTargetMaterial != nullptr"));
+
+	if (bIsBeamWeapon && LaserCannonClass)
+	{
+		if (UWorld* World = GetWorld())
+		{
+			FActorSpawnParameters SpawnParams;
+			SpawnParams.Owner = GetOwner();
+
+			const FVector RightVector = GetRightVector();
+			const FRotator SpawnRotation = RightVector.Rotation();
+			
+			LaserCannon = World->SpawnActor<ALaserCannon>(LaserCannonClass, FVector::Zero(), SpawnRotation, SpawnParams);
+			if (LaserCannon)
+			{
+				const FAttachmentTransformRules AttachmentRules(EAttachmentRule::KeepRelative, true);
+				LaserCannon->AttachToComponent(this, AttachmentRules, TEXT("MuzzleSocket"));
+				LaserCannon->SetActorRelativeLocation(FVector(0.0f, 75.0f, 10.0f));
+			}
+		}
+	}
 }
 
 bool UHallCrawlWeaponComponent::AttachWeapon(AHallCrawlCharacter* TargetCharacter)
@@ -104,6 +124,7 @@ bool UHallCrawlWeaponComponent::AttachWeapon(AHallCrawlCharacter* TargetCharacte
 	}
 
 	AttachToComponent(Mesh1P, AttachmentRules, SocketName);
+	Character->EquippedWeapon = this;
 
 	if (FireRifleAbilityClass && Character->GetAbilitySystemComponent())
 	{
@@ -138,7 +159,6 @@ bool UHallCrawlWeaponComponent::AttachWeapon(AHallCrawlCharacter* TargetCharacte
 void UHallCrawlWeaponComponent::EndPlay(const EEndPlayReason::Type EndPlayReason)
 {
 	StopFiring();
-	// ensure we have a character owner
 	if (Character != nullptr)
 	{
 		const UAbilitySystemComponent* Asc = Character->GetAbilitySystemComponent();
@@ -151,7 +171,6 @@ void UHallCrawlWeaponComponent::EndPlay(const EEndPlayReason::Type EndPlayReason
 
 		AbilitySpec->GetDynamicSpecSourceTags().RemoveTags(TagsToRemove);
 
-		// remove the input mapping context from the Player Controller
 		if (const APlayerController* PlayerController = Cast<APlayerController>(Character->GetController()))
 		{
 			if (UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(
@@ -162,6 +181,11 @@ void UHallCrawlWeaponComponent::EndPlay(const EEndPlayReason::Type EndPlayReason
 		}
 	}
 
-	// maintain the EndPlay call chain
+	if (LaserCannon)
+	{
+		LaserCannon->Destroy();
+		LaserCannon = nullptr;
+	}
+
 	Super::EndPlay(EndPlayReason);
 }

@@ -3,9 +3,6 @@
 #include "NiagaraSystem.h"
 #include "GameFramework/PlayerController.h"
 #include "Engine/World.h"
-#include "DrawDebugHelpers.h"
-#include "EnhancedInputComponent.h"
-
 
 ALaserCannon::ALaserCannon()
 {
@@ -17,52 +14,45 @@ ALaserCannon::ALaserCannon()
 void ALaserCannon::BeginPlay()
 {
 	Super::BeginPlay();
-
-	RandomStream = FRandomStream(0);
-
-	PlayerController = GetWorld()->GetFirstPlayerController();
-	if (!PlayerController)
-	{
-		UE_LOG(LogTemp, Warning, TEXT("PlayerController not found!"));
-		return;
-	}
-
-	if (Owner)
-	{
-		Owner->EnableInput(PlayerController);
-	}
-	else
-	{
-		UE_LOG(LogTemp, Warning, TEXT("Owner actor not found!"));
-		return;
-	}
-
-	const auto PlayerInputComponent = PlayerController->InputComponent;
-	if (UEnhancedInputComponent* EnhancedInputComponent = Cast<UEnhancedInputComponent>(PlayerInputComponent))
-	{
-		EnhancedInputComponent->BindAction(FireAction, ETriggerEvent::Started, this, &ALaserCannon::Fire);	
-	}
-	
 	InitializeNiagaraSystem();
 }
 
-void ALaserCannon::Tick(const float DeltaTime)
+void ALaserCannon::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-
-	AlignToNearestActor(DeltaTime);
-	PerformRaycast();
+	if (NiagaraEffect && NiagaraEffect->IsActive())
+	{
+		PerformRaycast();
+	}
 }
 
-void ALaserCannon::AlignToNearestActor(const float DeltaTime)
+void ALaserCannon::ActivateBeam(const bool bActive)
 {
-	TimeSinceLastTargetSelection += DeltaTime;
-	if (TimeSinceLastTargetSelection < 3.0f) { return; }
+	if (NiagaraEffect)
+	{
+		if (bActive)
+		{
+			NiagaraEffect->Activate(true);
+		}
+		else
+		{
+			NiagaraEffect->Deactivate();
+		}
+	}
+}
 
-	TimeSinceLastTargetSelection = 0.0f;
-	const float RandomAngle = RandomStream.FRandRange(0.f, 360.f);
-	const FRotator Rotation(0.0f, RandomAngle, 0.0f);
-	SetActorRotation(Rotation);
+void ALaserCannon::InitializeNiagaraSystem() const
+{
+	if (NiagaraEffect && NiagaraSystemAsset)
+	{
+		NiagaraEffect->SetAsset(NiagaraSystemAsset);
+		NiagaraEffect->SetRelativeLocation(FVector::ZeroVector);
+		NiagaraEffect->Deactivate();
+	}
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("NiagaraSystemAsset or NiagaraEffect is null!"));
+	}
 }
 
 void ALaserCannon::PerformRaycast() const
@@ -73,103 +63,17 @@ void ALaserCannon::PerformRaycast() const
 	const FVector End = Start + (ForwardVector * RayLength);
 
 	FHitResult Hit;
-	const FCollisionQueryParams QueryParams;
-	FCollisionObjectQueryParams ObjectParams;
-	ObjectParams.AddObjectTypesToQuery(ECC_Visibility);
-	ObjectParams.AddObjectTypesToQuery(ECC_WorldDynamic);
-	ObjectParams.AddObjectTypesToQuery(ECC_WorldStatic);
-
-	const bool bHit = GetWorld()->LineTraceSingleByObjectType(
-		Hit,
-		Start,
-		End,
-		ObjectParams,
-		QueryParams
-	);
-
-	if (const bool bIsActive = NiagaraEffect->IsActive(); !bIsActive && bHit)
+	FCollisionQueryParams QueryParams;
+	QueryParams.AddIgnoredActor(GetOwner());
+	if (const APawn* PlayerPawn = GetWorld()->GetFirstPlayerController()->GetPawn())
 	{
-		NiagaraEffect->Activate(true);
+		QueryParams.AddIgnoredActor(PlayerPawn);
 	}
-	else if (bIsActive && !bHit)
-	{
-		NiagaraEffect->Deactivate();
-	}
+	
+	const FCollisionObjectQueryParams ObjectParams(ECC_Visibility | ECC_WorldDynamic | ECC_WorldStatic | ECC_PhysicsBody);
 
-	NiagaraEffect->SetVectorParameter("Beam End", Hit.ImpactPoint);
-}
+	const bool bHit = GetWorld()->LineTraceSingleByObjectType(Hit, Start, End, ObjectParams, QueryParams);
+	const FVector BeamEnd = bHit ? Hit.ImpactPoint : End;
 
-void ALaserCannon::InitializeNiagaraSystem() const
-{
-	if (NiagaraEffect && NiagaraSystemAsset)
-	{
-		NiagaraEffect->SetAsset(NiagaraSystemAsset);
-		NiagaraEffect->SetRelativeLocation(FVector(0.0f, 0.0f, 0.0f));
-		NiagaraEffect->Activate(true);
-		NiagaraEffect->SetVectorParameter(TEXT("Beam_End"), GetOwner()->GetActorLocation());
-		const FAttachmentTransformRules Rules = FAttachmentTransformRules(EAttachmentRule::KeepRelative, true);
-	}
-	else
-	{
-		UE_LOG(LogTemp, Warning, TEXT("NiagaraSystemAsset or NiagaraEffect is null! Ensure NiagaraSystemAsset is assigned in the Editor."));
-	}
-}
-
-void ALaserCannon::Fire()
-{
-	if (!NiagaraEffect || !PlayerController)
-	{
-		UE_LOG(LogTemp, Warning, TEXT("NiagaraEffect or PlayerController is null!"));
-		return;
-	}
-
-	FVector HitLocation;
-	if (GetMouseClickPosition(HitLocation))
-	{
-		NiagaraEffect->SetVectorParameter(TEXT("Beam_End"), HitLocation);
-		DrawDebugSphere(GetWorld(), HitLocation, 10.0f, 12, FColor::Red, false, 2.0f);
-	}
-	else
-	{
-		UE_LOG(LogTemp, Log, TEXT("No valid hit location found for mouse click."));
-	}
-}
-
-bool ALaserCannon::GetMouseClickPosition(FVector& OutHitLocation) const
-{
-	if (!PlayerController)
-	{
-		UE_LOG(LogTemp, Warning, TEXT("PlayerController is null!"));
-		return false;
-	}
-
-	if (FVector2D MousePosition; !PlayerController->GetMousePosition(MousePosition.X, MousePosition.Y))
-	{
-		UE_LOG(LogTemp, Warning, TEXT("Failed to get mouse position!"));
-		return false;
-	}
-
-	FVector WorldDirection;
-	if (FVector WorldOrigin; PlayerController->DeprojectMousePositionToWorld(WorldOrigin, WorldDirection))
-	{
-		const FVector TraceEnd = WorldOrigin + (WorldDirection * 10000.0f);
-		FCollisionQueryParams QueryParams;
-		QueryParams.AddIgnoredActor(GetOwner());
-
-		if (FHitResult HitResult; GetWorld()->LineTraceSingleByChannel(HitResult, WorldOrigin, TraceEnd, ECC_Visibility, QueryParams))
-		{
-			OutHitLocation = HitResult.Location;
-			return true;
-		}
-		else
-		{
-			UE_LOG(LogTemp, Log, TEXT("Line trace did not hit any objects."));
-		}
-	}
-	else
-	{
-		UE_LOG(LogTemp, Warning, TEXT("Failed to deproject mouse position to world space."));
-	}
-
-	return false;
+	NiagaraEffect->SetVectorParameter(TEXT("Beam End"), BeamEnd);
 }

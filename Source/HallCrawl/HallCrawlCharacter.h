@@ -4,6 +4,7 @@
 
 #include "Logging/LogMacros.h"
 #include "AbilitySystemInterface.h"
+#include "HallCrawlWeaponComponent.h"
 #include "GameFramework/Character.h"
 #include "HallCrawlCharacter.generated.h"
 
@@ -54,6 +55,9 @@ public:
 	virtual UAbilitySystemComponent* GetAbilitySystemComponent() const override;
 
 	FVector GetMuzzleOffset() const;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Gameplay, meta = (AllowPrivateAccess = "true"))
+	TObjectPtr<UHallCrawlWeaponComponent> EquippedWeapon;
 
 protected:
 	/** Called for movement input */

@@ -1,62 +1,60 @@
 ﻿#pragma once
-
 #include "Abilities/GameplayAbility.h"
-#include "Abilities/Tasks/AbilityTask_WaitDelay.h"
 #include "FireRifleAbility.generated.h"
 
-UENUM()
-enum class EFireMode : uint8 { Single, Auto, Burst };
+class AHallCrawlCharacter;
+class ALaserCannon;
+class UNiagaraComponent;
+
+UENUM(BlueprintType)
+enum class EFireMode : uint8
+{
+	Single,
+	Burst,
+	Auto
+};
 
 UCLASS()
-class HALLCRAWL_API UFireRifleAbility : public UGameplayAbility
+class UFireRifleAbility : public UGameplayAbility
 {
 	GENERATED_BODY()
 
 public:
-
-	virtual void ActivateAbility(
-		const FGameplayAbilitySpecHandle Handle,
-		const FGameplayAbilityActorInfo* ActorInfo,
-		const FGameplayAbilityActivationInfo ActivationInfo,
-		const FGameplayEventData* TriggerEventData) override;
-
-	virtual void EndAbility(
-		const FGameplayAbilitySpecHandle Handle,
-		const FGameplayAbilityActorInfo* ActorInfo,
-		const FGameplayAbilityActivationInfo ActivationInfo,
-		bool bReplicateEndAbility,
-		bool bWasCancelled) override;
-
-	UFUNCTION(BlueprintCallable, Category = "FireRifleAbility", meta = (AllowPrivateAccess = "true"))
-	void FireProjectile(const FGameplayAbilitySpecHandle Handle);
-
-	const FName TriggerTagName = FName("Weapon.Trigger.Triggered");
-	const FName OngoingTagName = FName("Weapon.Trigger.Ongoing");
+	virtual void ActivateAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, const FGameplayEventData* TriggerEventData) override;
+	virtual void EndAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, bool bReplicateEndAbility, bool bWasCancelled) override;
 
 protected:
-	UFUNCTION(BlueprintCallable, Category = "FireRifleAbility", meta = (AllowPrivateAccess = "true"))
+	void FireProjectile(const FGameplayAbilitySpecHandle Handle);
 	void SpawnBullets(const FGameplayAbilitySpec AbilitySpec);
 
 	UPROPERTY()
-	class AHallCrawlCharacter* Character = nullptr;
+	AHallCrawlCharacter* Character;
 
-public:
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category=Projectile)
-	TSubclassOf<class AHallCrawlProjectile> ProjectileClass;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Gameplay")
+	TSubclassOf<AActor> ProjectileClass;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category=Gameplay)
-	USoundBase* FireSound = nullptr;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Gameplay")
+	USoundBase* FireSound;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Gameplay)
-	UAnimMontage* FireAnimation = nullptr;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Gameplay")
+	UAnimMontage* FireAnimation;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Gameplay)
-	EFireMode FireMode = EFireMode::Single;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Gameplay")
+	EFireMode FireMode;
 
-	UPROPERTY(EditAnywhere, blueprintreadwrite, Category = Gameplay)
-	float OriginSpread = 0.0f;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Gameplay")
+	float OriginSpread;
 
-protected:
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Gameplay")
+	FString TriggerTagName;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Gameplay")
+	FString OngoingTagName;
+
+private:
+	void ActivateBeamWeapon();
+	void DeactivateBeamWeapon();
+
 	UPROPERTY()
-	UAbilityTask_WaitDelay* FireTask = nullptr;
+	ALaserCannon* LaserCannon;
 };

@@ -6,46 +6,34 @@
 #include "GameFramework/Actor.h"
 #include "LaserCannon.generated.h"
 
+class UNiagaraSystem;
+class UNiagaraComponent;
 
 UCLASS()
-class HALLCRAWL_API ALaserCannon : public AActor
+class ALaserCannon : public AActor
 {
 	GENERATED_BODY()
 
 public:
 	ALaserCannon();
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Niagara")
-	class UNiagaraSystem* NiagaraSystemAsset;
 	
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Niagara")
-	class UNiagaraComponent* NiagaraEffect;
+	UFUNCTION(BlueprintCallable)
+	void ActivateBeam(bool bActive);
 
+	UFUNCTION(BlueprintCallable)
+	UNiagaraComponent* GetNiagaraEffect() const { return NiagaraEffect; }
 
 protected:
 	virtual void BeginPlay() override;
-
-public:
 	virtual void Tick(float DeltaTime) override;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Niagara")
+	UNiagaraComponent* NiagaraEffect;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Niagara")
+	UNiagaraSystem* NiagaraSystemAsset;
+
 private:
-	
-	void AlignToNearestActor(const float DeltaTime);
-	
-	void PerformRaycast() const;
-
 	void InitializeNiagaraSystem() const;
-
-	void Fire();
-
-	bool GetMouseClickPosition(FVector& OutHitLocation) const;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "LaserBeamComponent", meta = (AllowPrivateAccess = "true"))
-	class UInputAction* FireAction;
-
-	UPROPERTY()
-	APlayerController* PlayerController;
-
-	FRandomStream RandomStream;
-	float TimeSinceLastTargetSelection;
+	void PerformRaycast() const;
 };

@@ -36,4 +36,6 @@ protected:
 private:
 	void InitializeNiagaraSystem() const;
 	void PerformRaycast() const;
+
+	bool bIsFiring = false;
 };
